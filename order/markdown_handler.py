@@ -1,6 +1,11 @@
 from typing import Optional
 import re
 import os
+import subprocess
+
+# Task status constants
+TASK_INCOMPLETE = "- [ ]"
+TASK_COMPLETE = "- [x]"
 
 class MarkdownResult:
     def __init__(self, success: bool = True, content: Optional[str] = None, error: Optional[str] = None) -> None:
@@ -34,6 +39,10 @@ class MarkdownHandler:
             return MarkdownResult(success=True)
         except PermissionError:
             return MarkdownResult(success=False, error="Permission denied")
+        except OSError as e:
+            return MarkdownResult(success=False, error=f"File system error: {str(e)}")
+        except Exception as e:
+            return MarkdownResult(success=False, error=f"Unexpected error: {str(e)}")
 
     def create_file(self) -> MarkdownResult:
         try:
@@ -47,8 +56,12 @@ class MarkdownHandler:
 """)
 
             return MarkdownResult(success=True)
+        except PermissionError:
+            return MarkdownResult(success=False, error="Permission denied")
+        except OSError as e:
+            return MarkdownResult(success=False, error=f"File system error: {str(e)}")
         except Exception as e:
-            return MarkdownResult(success=False, error=str(e))
+            return MarkdownResult(success=False, error=f"Unexpected error: {str(e)}")
 
     def read_file(self) -> MarkdownResult:
         try:
@@ -118,8 +131,8 @@ class MarkdownHandler:
         lines = result.content.split('\n')
 
         for i, line in enumerate(lines):
-            if "- [ ]" in line and partial_text.lower() in line.lower():
-                lines[i] = line.replace("- [ ]", "- [x]")
+            if TASK_INCOMPLETE in line and partial_text.lower() in line.lower():
+                lines[i] = line.replace(TASK_INCOMPLETE, TASK_COMPLETE)
                 break
 
         return self._write_file_safely('\n'.join(lines))
@@ -177,6 +190,12 @@ class MarkdownHandler:
             return result
             
         lines = result.content.split('\n')
+        updated_lines = self._insert_content_into_existing_date(lines, date, section_type, content)
+        
+        return self._write_file_safely('\n'.join(updated_lines))
+
+    def _insert_content_into_existing_date(self, lines: list, date: str, section_type: str, content: str) -> list:
+        """Insert content into existing date section, handling section placement correctly"""
         result_lines = []
         in_target_date = False
         section_added = False
@@ -187,19 +206,20 @@ class MarkdownHandler:
             if line.startswith(f"## {date}"):
                 in_target_date = True
             elif line.startswith("## ") and in_target_date and not section_added:
+                # Insert before next date section
                 result_lines.insert(-1, f"### {section_type}")
                 result_lines.insert(-1, content)
                 result_lines.insert(-1, "")
-
                 section_added = True
                 in_target_date = False
 
+        # If we're still in target date (no next section found), append at end
         if in_target_date and not section_added:
             result_lines.append(f"### {section_type}")
             result_lines.append(content)
             result_lines.append("")
 
-        return self._write_file_safely('\n'.join(result_lines))
+        return result_lines
 
     def search_content(self, query: str) -> MarkdownResult:
         """Search for content in the markdown file"""
@@ -235,7 +255,7 @@ class MarkdownHandler:
         task_found = False
 
         for i, line in enumerate(lines):
-            if "- [ ]" in line and partial_text.lower() in line.lower():
+            if TASK_INCOMPLETE in line and partial_text.lower() in line.lower():
                 lines.pop(i)
                 task_found = True
                 break
@@ -282,8 +302,6 @@ class MarkdownHandler:
     def get_current_branch(self) -> str:
         """Get current git branch name, return empty string if not in git repo"""
         try:
-            import subprocess
-
             result = subprocess.run(['git', 'branch', '--show-current'],
                                         capture_output=True, text=True, cwd=os.path.dirname(self.file_path))
 

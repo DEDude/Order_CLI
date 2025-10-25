@@ -410,3 +410,15 @@ def test_add_command_with_branch_flag():
 
         finally:
             os.chdir(original_dir)
+
+def test_get_today_function_returns_correct_format():
+    """Test that get_today returns date in YYYY-MM-DD format"""
+    from order.cli import get_today
+    from datetime import datetime
+    
+    result = get_today()
+    expected = datetime.now().strftime("%Y-%m-%d")
+    
+    assert result == expected
+    assert len(result) == 10  # YYYY-MM-DD is 10 characters
+    assert result.count('-') == 2  # Should have exactly 2 dashes

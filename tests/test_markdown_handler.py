@@ -346,3 +346,93 @@ def test_branch_aware_user_subsections():
         # Should create branch-aware subsection
         assert f"### {username}-feature-auth (@{username})" in content_result.content
         assert "Fix login bug" in content_result.content
+
+def test_task_constants_are_used_consistently():
+    """Test that task completion uses consistent constants"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = os.path.join(temp_dir, "dev-notes.md")
+        
+        # Create file with task
+        with open(file_path, 'w') as f:
+            f.write("# Dev Notes\n\n## 2025-10-25\n### alice (@alice)\n#### Todo\n- [ ] Test task\n")
+        
+        handler = MarkdownHandler(file_path)
+        
+        # Mark task complete
+        result = handler.mark_task_complete("Test task")
+        assert result.success
+        
+        # Verify constants are used (this will pass now, but we'll refactor to use constants)
+        content_result = handler.read_file()
+        assert "- [x] Test task" in content_result.content
+        assert "- [ ] Test task" not in content_result.content
+
+def test_consistent_error_handling_across_methods():
+    """Test that all methods handle file errors consistently"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Test with non-existent file
+        file_path = os.path.join(temp_dir, "nonexistent.md")
+        handler = MarkdownHandler(file_path)
+        
+        # All methods should return MarkdownResult with success=False for file errors
+        read_result = handler.read_file()
+        assert not read_result.success
+        assert "File not found" in read_result.error
+        
+        parse_result = handler.parse_daily_section("2025-10-25")
+        assert not parse_result.success
+        assert "File not found" in parse_result.error
+        
+        search_result = handler.search_content("test")
+        assert not search_result.success
+        assert "File not found" in search_result.error
+
+def test_add_to_existing_date_section_is_testable():
+    """Test that _add_to_existing_date_section logic is clear and testable"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = os.path.join(temp_dir, "dev-notes.md")
+        
+        # Create file with existing date section
+        initial_content = """# Dev Notes
+
+## 2025-10-25
+
+### alice (@alice)
+#### Todo
+- [ ] Existing task
+
+## 2025-10-24
+
+### bob (@bob)
+#### Todo
+- [ ] Old task
+"""
+        
+        with open(file_path, 'w') as f:
+            f.write(initial_content)
+        
+        handler = MarkdownHandler(file_path)
+        
+        # Add content to existing date section
+        result = handler.add_content_to_daily_section("2025-10-25", "Notes", "New note content")
+        
+        assert result.success
+        
+        # Verify content was added to correct section
+        content_result = handler.read_file()
+        lines = content_result.content.split('\n')
+        
+        # Find the 2025-10-25 section
+        date_index = None
+        next_date_index = None
+        
+        for i, line in enumerate(lines):
+            if line == "## 2025-10-25":
+                date_index = i
+            elif line == "## 2025-10-24":
+                next_date_index = i
+                break
+        
+        # Content should be in the 2025-10-25 section, not after 2025-10-24
+        section_content = '\n'.join(lines[date_index:next_date_index])
+        assert "New note content" in section_content

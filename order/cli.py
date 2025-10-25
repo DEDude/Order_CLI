@@ -60,17 +60,6 @@ def get_handler() -> MarkdownHandler:
 def get_today() -> str:
     """Get today's date in YYYY-MM-DD format"""
     return datetime.now().strftime("%Y-%m-%d")
-    result = handler.read_file()
-    if not result.success:
-        create_result = handler.create_file()
-        if not create_result.success:
-            typer.echo(f"Error creating file: {create_result.error}")
-            raise typer.Exit(1)
-    return handler
-
-def get_today() -> str:
-    """Get today's date in YYYY-MM-DD format"""
-    return datetime.now().strftime("%Y-%m-%d")
 
 app = typer.Typer()
 

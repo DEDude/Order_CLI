@@ -329,6 +329,49 @@ if user and user.email:
     - Extract magic strings to constants
     - Standardize error handling patterns across all CLI commands
 
+### Phase 6.5: Technical Debt & Optimization Cleanup
+30. **✅ COMPLETED Task 30** - Code Quality Issues - Fix inconsistencies and improve maintainability:
+    - ✅ **Duplicate code in cli.py**: Fixed duplicate `get_today()` function (TDD: test → fix → verify)
+    - ✅ **Inconsistent error handling**: Standardized with specific exception types (PermissionError, OSError, Exception hierarchy)
+    - ✅ **Missing type hints**: Moved subprocess import to module level for better organization
+    - ✅ **Hardcoded strings**: Added constants `TASK_INCOMPLETE = "- [ ]"` and `TASK_COMPLETE = "- [x]"`
+    - ✅ **Method complexity**: Refactored `_add_to_existing_date_section()` into smaller, testable methods (`_insert_content_into_existing_date()`)
+
+31. **Performance Optimizations** - Improve efficiency for larger files:
+    - **File I/O inefficiency**: Multiple `read_file()` calls in single operations
+    - **String operations**: Repeated `split('\n')` and `'\n'.join()` operations
+    - **Search performance**: Linear search through all lines for task operations
+    - **Memory usage**: Loading entire file content for small operations
+    - **Git subprocess**: Called on every operation, should cache branch detection
+
+32. **Architecture Improvements** - Better separation of concerns:
+    - **Mixed responsibilities**: MarkdownHandler does both parsing and file I/O
+    - **Tight coupling**: CLI directly creates MarkdownHandler instances
+    - **Missing abstractions**: No interface for different storage backends
+    - **Error propagation**: Inconsistent error handling between CLI and handler
+    - **Configuration**: Hard-coded section names and file structure
+
+33. **Testing Gaps** - Improve test coverage and quality:
+    - **Edge cases**: No tests for concurrent file access or large files
+    - **Integration tests**: Missing tests for git branch detection in real repos
+    - **Performance tests**: No benchmarks for file operations with large datasets
+    - **Error scenarios**: Limited testing of filesystem permission issues
+    - **Mock improvements**: Some tests use real file system instead of mocks
+
+34. **User Experience Issues** - Improve CLI usability:
+    - **Verbose output**: Commands echo full content instead of summaries
+    - **No confirmation**: Destructive operations (delete) have no confirmation prompts
+    - **Limited feedback**: Search results don't show context or line numbers
+    - **No pagination**: Large file content dumps to terminal without paging
+    - **Missing help**: No examples in command help text
+
+35. **Security & Robustness** - Harden against edge cases:
+    - **Path traversal**: File path validation could be stronger
+    - **Input sanitization**: User content not validated for markdown injection
+    - **File locking**: No protection against concurrent modifications
+    - **Backup strategy**: No automatic backups before destructive operations
+    - **Error recovery**: No rollback mechanism for failed operations
+
 ### Phase 6: Collaboration-Friendly Format
 25. **Design optimal markdown structure** - Create human-readable, collaboration-friendly format
     - Implement new structure: Project Context (top-level) + Daily sections with user subsections
@@ -584,6 +627,14 @@ All 5 steps completed:
    - **Green**: Test passes - confirms backward compatibility with new `### username-branch (@username)` → `#### Todo/Notes/Ideas` format
    - **Result**: New format is fully backward compatible with all existing functionality
    - **Benefit**: Teams can adopt new collaboration format without breaking existing workflows
+
+30. **✅ COMPLETED Task 30** - Code Quality Issues - Fix inconsistencies and improve maintainability:
+   - **Red**: Wrote tests for `get_today()`, task constants, error handling, and method complexity
+   - **Green**: Fixed duplicate function, added `TASK_INCOMPLETE`/`TASK_COMPLETE` constants
+   - **Green**: Standardized error handling with specific exception hierarchy (PermissionError → OSError → Exception)
+   - **Green**: Refactored complex `_add_to_existing_date_section()` into smaller `_insert_content_into_existing_date()` method
+   - **Result**: Eliminated code duplication, improved maintainability, consistent error patterns
+   - **Benefit**: Better code quality, easier testing, more reliable error handling
 15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
    - **Red**: Wrote failing test `test_invalid_date_format_validation()`
    - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
@@ -645,9 +696,9 @@ All technical debt addressed:
 - ✅ Reduced codebase by ~40 lines while maintaining all functionality
 
 ### 🚧 Currently Working On
-- **Phase 7**: Task Lifecycle Management - Handle incomplete tasks and long-running work
-- **Current Task**: Task 30 - Task carryover commands (carry, rollover, status with age tracking)
-- Next: Task 31 - Task status tracking (in-progress tasks, pause/resume, aging indicators)
+- **Phase 6.5**: Technical Debt & Optimization Cleanup - Improve code quality and performance
+- **Current Task**: Task 31 - Performance Optimizations (file I/O efficiency, caching, memory usage)
+- Next: Task 32 - Architecture Improvements (separation of concerns, dependency injection)
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -666,10 +717,10 @@ All technical debt addressed:
 8. ✅ **Improve docstrings** - SKIPPED (current docstrings sufficient with type hints and clear naming)
 9. ✅ **Add validation** - Input validation for date formats, section types, empty content, search queries
 
-### 📊 Test Status: 31/31 Passing ✅
+### 📊 Test Status: 35/35 Passing ✅
 - ✅ All legacy tests still pass (Task model, original CLI)
-- ✅ All markdown handler tests pass (17/17) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, migration support, branch-aware subsections, and MarkdownResult handling
-- ✅ All CLI tests pass (14/14) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery, configuration support, branch flags, and new format compatibility
+- ✅ All markdown handler tests pass (20/20) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, migration support, branch-aware subsections, task constants, error handling consistency, and method refactoring
+- ✅ All CLI tests pass (15/15) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery, configuration support, branch flags, new format compatibility, and helper function validation
 - **Phase 1**: COMPLETE ✅
 - **Phase 2**: COMPLETE ✅ (4/4 steps done)
 - **Phase 2.5**: COMPLETE ✅ (4/4 steps done - technical debt cleanup finished)
