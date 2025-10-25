@@ -315,6 +315,80 @@ def test_configuration_system_respects_custom_file_path():
             if "ORDER_NOTES_FILE" in os.environ:
                 del os.environ["ORDER_NOTES_FILE"]
 
+def test_all_commands_work_with_new_user_subsection_format():
+    """Test that all CLI commands work with new user-subsection format"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+
+        try:
+            # Create file with new format structure
+            new_format_content = """# Dev Notes
+
+## Project Context
+
+*Add project-level context, goals, and background information here.*
+
+## 2025-10-25
+
+### alice-feature-auth (@alice)
+#### Todo
+- [ ] Fix login bug
+- [ ] Update authentication tests
+
+#### Notes
+- Left off debugging OAuth flow
+
+#### Ideas
+- Consider Redis for session storage
+
+### bob-main (@bob)
+#### Todo
+- [ ] Review Alice's PR
+- [ ] Deploy to staging
+"""
+            
+            with open("dev-notes.md", "w") as f:
+                f.write(new_format_content)
+
+            runner = CliRunner()
+            
+            # Test today command works with new format
+            result = runner.invoke(app, ["today"])
+            assert result.exit_code == 0
+            assert "alice-feature-auth" in result.stdout
+            assert "Fix login bug" in result.stdout
+            assert "bob-main" in result.stdout
+            
+            # Test search command works with new format
+            result = runner.invoke(app, ["search", "login"])
+            assert result.exit_code == 0
+            assert "Fix login bug" in result.stdout
+            
+            # Test done command works with new format
+            result = runner.invoke(app, ["done", "login bug"])
+            assert result.exit_code == 0
+            assert "marked as complete" in result.stdout.lower()
+            
+            # Verify task was actually marked complete
+            with open("dev-notes.md", "r") as f:
+                content = f.read()
+                assert "- [x] Fix login bug" in content
+            
+            # Test delete command works with new format
+            result = runner.invoke(app, ["delete", "Review Alice"])
+            assert result.exit_code == 0
+            assert "deleted" in result.stdout.lower()
+            
+            # Verify task was actually deleted
+            with open("dev-notes.md", "r") as f:
+                content = f.read()
+                assert "Review Alice's PR" not in content
+                assert "Deploy to staging" in content  # Other task should remain
+
+        finally:
+            os.chdir(original_dir)
+
 def test_add_command_with_branch_flag():
     """Test that --branch flag overrides git branch detection"""
     with tempfile.TemporaryDirectory() as temp_dir:

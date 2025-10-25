@@ -8,7 +8,7 @@
 
 ### alice-feature-auth (@alice)
 #### Todo
-- [x] Fix login bug
+- [ ] Fix login bug
 - [ ] Update authentication tests
 
 #### Notes
@@ -20,13 +20,8 @@
 
 ### bob-main (@bob)
 #### Todo
+- [ ] Review Alice's PR
 - [ ] Deploy to staging
-
-### Todo
-- [ ] test
-
-### Todo
-- [ ] test
 
 ## 2025-10-24
 
