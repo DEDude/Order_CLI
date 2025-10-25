@@ -174,9 +174,10 @@ def test_add_content_creates_date_section_with_user_attribution():
         result = handler.read_file()
         
         assert result.success
-        assert "## 2025-10-24 (@" in result.content
-        assert ")" in result.content
-        assert "### Todo" in result.content
+        assert "## 2025-10-24" in result.content
+        assert "### " in result.content  # User subsection
+        assert "(@" in result.content    # User attribution in subsection
+        assert "#### Todo" in result.content
         assert "- [ ] Test task" in result.content
 
 def test_add_content_handles_permission_error(tmp_path):
@@ -239,9 +240,6 @@ def test_empty_search_query_validation():
             result = handler.mark_task_complete(empty_query)
             assert not result.success
             assert "Search text cannot be empty" in result.error
-            
-            assert not result.success
-            assert "Search text cannot be empty" in result.error
 
 def test_new_file_structure_with_project_context():
     """Test that new files are created with Project Context section"""
@@ -268,5 +266,22 @@ def test_new_file_structure_with_project_context():
 
         assert expected_structure in content_result.content
 
+def test_user_specific_subsections_in_daily_sections():
+    """Test that content is added to user-specific subsections within daily sections"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = os.path.join(temp_dir, "dev-notes.md")
 
-        
+        handler = MarkdownHandler(file_path)
+        handler.create_file()
+
+        result = handler.add_content_to_daily_section("2025-10-25", "Todo", "- [ ] Fix authentication bug")
+
+        assert result.success
+
+        content_result = handler.read_file()
+
+        assert "## 2025-10-25" in content_result.content
+        assert "### " in content_result.content
+        assert "(@" in content_result.content
+        assert "#### Todo" in content_result.content
+        assert "Fix authentication bug" in content_result.content

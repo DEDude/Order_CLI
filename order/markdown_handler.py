@@ -129,7 +129,7 @@ class MarkdownHandler:
         return getpass.getuser()
 
     def _create_new_date_section(self, date: str, section_type: str, content: str) -> MarkdownResult:
-        """Create a new date section with content"""
+        """Create a new date section with user-specific subsection"""
         validation_result = self._validate_date_format(date)
         if not validation_result.success:
             return validation_result
@@ -146,7 +146,16 @@ class MarkdownHandler:
                 insert_index = i + 1
                 break
 
-        new_section = [f"", f"## {date} (@{self.get_username()})", f"### {section_type}", content, ""]
+        username = self.get_username()
+        new_section = [
+            f"", 
+            f"## {date}", 
+            f"", 
+            f"### {username} (@{username})", 
+            f"#### {section_type}", 
+            content, 
+            ""
+        ]
 
         for i, new_line in enumerate(new_section):
             lines.insert(insert_index + i, new_line)

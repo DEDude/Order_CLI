@@ -517,6 +517,13 @@ All 5 steps completed:
    - **Fixed**: Resolved failing `test_today_command_shows_only_current_day` (date issue)
    - **Result**: New files now created with structure: `# Dev Notes` → `## Project Context` → placeholder text
    - **Benefit**: Establishes foundation for human-readable, collaboration-friendly format
+
+26. **✅ COMPLETED Task 26** - Refactor to user-specific subsections within daily sections:
+   - **Red**: Wrote failing test `test_user_specific_subsections_in_daily_sections()`
+   - **Green**: Updated `_create_new_date_section()` to create user subsections format
+   - **Fixed**: Updated existing tests to expect new format (removed old @username in date headers)
+   - **Result**: New format: `## 2025-10-25` → `### username (@username)` → `#### Todo/Notes/Ideas`
+   - **Benefit**: Eliminates git conflicts - each user gets their own subsection within daily sections
 15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
    - **Red**: Wrote failing test `test_invalid_date_format_validation()`
    - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
@@ -579,8 +586,8 @@ All technical debt addressed:
 
 ### 🚧 Currently Working On
 - **Phase 6**: Collaboration-Friendly Format - Critical for team usage and git conflict prevention
-- **Current Task**: Task 26 - Refactor to user-specific subsections within daily sections
-- Next: Implement user subsections format: `## 2025-10-25` → `### Alice (@alice)` → `#### Tasks/Notes/Ideas`
+- **Current Task**: Task 27 - Add migration support to convert existing files to new format
+- Next: Create migration function and `order migrate` command for existing dev-notes.md files
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -599,9 +606,9 @@ All technical debt addressed:
 8. ✅ **Improve docstrings** - SKIPPED (current docstrings sufficient with type hints and clear naming)
 9. ✅ **Add validation** - Input validation for date formats, section types, empty content, search queries
 
-### 📊 Test Status: 26/26 Passing ✅
+### 📊 Test Status: 27/27 Passing ✅
 - ✅ All legacy tests still pass (Task model, original CLI)
-- ✅ All markdown handler tests pass (15/15) - including comprehensive edge cases, validation tests, delete functionality, new file structure, and MarkdownResult handling
+- ✅ All markdown handler tests pass (16/16) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, and MarkdownResult handling
 - ✅ All CLI tests pass (11/11) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery and configuration support
 - **Phase 1**: COMPLETE ✅
 - **Phase 2**: COMPLETE ✅ (4/4 steps done)
@@ -611,7 +618,7 @@ All technical debt addressed:
 - **Phase 4**: COMPLETE ✅ (2/2 steps done) - Polish & Testing (validation tests)
 - **Phase 5**: COMPLETE ✅ (3/3 steps done) - Core Feature Completion
 - **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
-- **Phase 6**: IN PROGRESS 🚧 (1/5 steps done) - Collaboration-Friendly Format
+- **Phase 6**: IN PROGRESS 🚧 (2/5 steps done) - Collaboration-Friendly Format
 - **Phase 7**: PENDING 📋 (0/2 steps done) - Packaging & Distribution  
 - **Phase 8**: PENDING 📋 (0/2 steps done) - Polish & Documentation
 
