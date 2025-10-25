@@ -344,11 +344,18 @@ if user and user.email:
     - Create migration function to convert old format to new user-subsection format
     - Add `order migrate` command for existing dev-notes.md files
     - Preserve all existing content during migration
-28. **Branch-aware user subsections** - Handle multiple branches per user
-    - Add branch detection using `git branch --show-current`
-    - Format: `### alice-feature-auth (@alice)` and `### alice-main (@alice)`
-    - Add `--branch` flag to all commands for manual branch specification
-    - Auto-detect current git branch when available, fallback to username only
+28. **✅ COMPLETED Task 28** - Branch-aware user subsections to handle multiple branches per user:
+    - ✅ Add branch detection using `git branch --show-current`
+    - ✅ Format: `### alice-feature-auth (@alice)` and `### alice-main (@alice)`
+    - 🚧 TODO: Add `--branch` flag to all commands for manual branch specification
+    - ✅ Auto-detect current git branch when available, fallback to username only
+28.5. **Task assignment functionality** - Assign tasks and ideas to team members for collaborative efforts
+    - Add `--to`/`--assign` flags to existing `add`, `idea` commands: `order add "Fix bug" --to alice`
+    - New `assign` command for assigning existing tasks: `order assign "Fix login bug" --to alice`
+    - Update MarkdownHandler to handle assignment syntax: `- [ ] Fix bug (assigned: @alice)`
+    - Add `order assigned --to alice` command to show tasks assigned to someone
+    - Add `order my-assignments` command to show tasks assigned to current user
+    - Support @ prefix in usernames: `--to @bob` or `--to bob`
 29. **Update all commands for new format** - Ensure compatibility
     - Update `parse_daily_section()` to handle user subsections and 4-level hierarchy
     - Modify `today`, `search`, `list` commands to work with new structure
@@ -548,6 +555,14 @@ All 5 steps completed:
    - **Fixed**: Syntax errors (elif.line → elif line, method name corrections)
    - **Result**: Old format files can be migrated: `## 2025-10-24 (@alice)` → `## 2025-10-24` + `### alice (@alice)`
    - **Benefit**: Existing teams can upgrade to new collaboration-friendly format without data loss
+
+28. **✅ COMPLETED Task 28** - Branch-aware user subsections to handle multiple branches per user:
+   - **Red**: Wrote failing test `test_branch_aware_user_subsections()`
+   - **Green**: Added `get_current_branch()` method with git subprocess integration
+   - **Green**: Modified `_create_new_date_section()` to use branch info in user sections
+   - **Fixed**: Import issues, duplicate code removal, test file cleanup
+   - **Result**: Format now supports `### username-branch (@username)` when git branch detected
+   - **Benefit**: Users working on multiple branches get separate subsections, preventing conflicts
 15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
    - **Red**: Wrote failing test `test_invalid_date_format_validation()`
    - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
@@ -610,8 +625,8 @@ All technical debt addressed:
 
 ### 🚧 Currently Working On
 - **Phase 6**: Collaboration-Friendly Format - Critical for team usage and git conflict prevention
-- **Current Task**: Task 28 - Branch-aware user subsections to handle multiple branches per user
-- Next: Add git branch detection and `--branch` flag for format: `### alice-feature-auth (@alice)`
+- **Current Task**: Task 28.5 - Add `--branch` flag to CLI commands for manual branch override
+- Next: Task 29 - Update all commands for new format compatibility, then team workflow commands
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -630,10 +645,10 @@ All technical debt addressed:
 8. ✅ **Improve docstrings** - SKIPPED (current docstrings sufficient with type hints and clear naming)
 9. ✅ **Add validation** - Input validation for date formats, section types, empty content, search queries
 
-### 📊 Test Status: 28/28 Passing ✅
+### 📊 Test Status: 29/29 Passing ✅
 - ✅ All legacy tests still pass (Task model, original CLI)
-- ✅ All markdown handler tests pass (17/17) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, migration support, and MarkdownResult handling
-- ✅ All CLI tests pass (11/11) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery and configuration support
+- ✅ All markdown handler tests pass (17/17) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, migration support, branch-aware subsections, and MarkdownResult handling
+- ✅ All CLI tests pass (12/12) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery and configuration support
 - **Phase 1**: COMPLETE ✅
 - **Phase 2**: COMPLETE ✅ (4/4 steps done)
 - **Phase 2.5**: COMPLETE ✅ (4/4 steps done - technical debt cleanup finished)
@@ -642,7 +657,7 @@ All technical debt addressed:
 - **Phase 4**: COMPLETE ✅ (2/2 steps done) - Polish & Testing (validation tests)
 - **Phase 5**: COMPLETE ✅ (3/3 steps done) - Core Feature Completion
 - **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
-- **Phase 6**: IN PROGRESS 🚧 (3/6 steps done) - Collaboration-Friendly Format
+- **Phase 6**: IN PROGRESS 🚧 (4/6 steps done) - Collaboration-Friendly Format
 - **Phase 7**: PENDING 📋 (0/2 steps done) - Packaging & Distribution  
 - **Phase 8**: PENDING 📋 (0/2 steps done) - Polish & Documentation
 

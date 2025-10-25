@@ -1,6 +1,7 @@
 import os
 import pytest
 import tempfile
+from unittest.mock import patch
 from order.markdown_handler import MarkdownHandler
 
 def test_create_new_markdown_file():
@@ -324,3 +325,24 @@ def test_migrate_old_format_to_new_format():
         assert "#### Notes" in content_result.content
         assert "### bob (@bob)" in content_result.content
         assert "Fix authentication bug" in content_result.content
+
+def test_branch_aware_user_subsections():
+    """Test that user subsections include branch information when available"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = os.path.join(temp_dir, "dev-notes.md")
+        
+        handler = MarkdownHandler(file_path)
+        handler.create_file()
+        
+        # Mock git branch detection
+        with patch.object(handler, 'get_current_branch', return_value='feature-auth'):
+            result = handler.add_content_to_daily_section("2025-10-25", "Todo", "- [ ] Fix login bug")
+        
+        assert result.success
+        
+        content_result = handler.read_file()
+        username = handler.get_username()
+        
+        # Should create branch-aware subsection
+        assert f"### {username}-feature-auth (@{username})" in content_result.content
+        assert "Fix login bug" in content_result.content

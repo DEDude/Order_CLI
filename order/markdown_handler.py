@@ -1,5 +1,6 @@
 from typing import Optional
 import re
+import os
 
 class MarkdownResult:
     def __init__(self, success: bool = True, content: Optional[str] = None, error: Optional[str] = None) -> None:
@@ -147,11 +148,14 @@ class MarkdownHandler:
                 break
 
         username = self.get_username()
+        branch = self.get_current_branch()
+        user_section = f"{username}-{branch}" if branch else username
+        
         new_section = [
             f"", 
             f"## {date}", 
             f"", 
-            f"### {username} (@{username})", 
+            f"### {user_section} (@{username})", 
             f"#### {section_type}", 
             content, 
             ""
@@ -240,27 +244,6 @@ class MarkdownHandler:
             return MarkdownResult(success=False, error=f"No task found containing '{partial_text}'")
 
         return self._write_file_safely('\n'.join(lines))
-        """Find and delete a task based on partial text match"""
-        if not partial_text.strip():
-            return MarkdownResult(success=False, error="Search text cannot be empty")
-
-        result = self.read_file()
-        if not result.success:
-            return result
-
-        lines = result.content.split('\n')
-        task_found = False
-
-        for i, line in enumerate(lines):
-            if "- [ ]" in line and partial_text.lower() in line.lower():
-                lines.pop(i)
-                task_found = True
-                break
-
-        if not task_found:
-            return MarkdownResult(success=False, error=f"No task found containing '{partial_text}'")
-
-        return self._write_file_safely('\n'.join(lines))
 
     def migrate_to_new_format(self) -> MarkdownResult:
         """Migrate old format to new user-subsection format"""
@@ -295,3 +278,18 @@ class MarkdownHandler:
                 new_lines.append(line)
 
         return self._write_file_safely('\n'.join(new_lines))
+
+    def get_current_branch(self) -> str:
+        """Get current git branch name, return empty string if not in git repo"""
+        try:
+            import subprocess
+
+            result = subprocess.run(['git', 'branch', '--show-current'],
+                                        capture_output=True, text=True, cwd=os.path.dirname(self.file_path))
+
+            if result.returncode == 0:
+                    return result.stdout.strip()
+        
+        except (subprocess.SubprocessError, FileNotFoundError):
+            pass
+        return ""
