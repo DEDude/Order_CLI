@@ -261,3 +261,37 @@ class MarkdownHandler:
             return MarkdownResult(success=False, error=f"No task found containing '{partial_text}'")
 
         return self._write_file_safely('\n'.join(lines))
+
+    def migrate_to_new_format(self) -> MarkdownResult:
+        """Migrate old format to new user-subsection format"""
+        result = self.read_file()
+
+        if not result.success:
+            return result
+
+        content = result.content
+
+
+        if "## Project Context" not in content:
+            content = content.replace("Dev Notes", "Dev Notes\n\n## Project Context\n\n*Add project-level context, goals, and background information here*")
+            
+        lines = content.split('\n')
+        new_lines = []
+
+        for line in lines:
+            if line.startswith("## ") and "(@" in line:
+                parts = line.split(" (@")
+                date_part = parts[0].replace("## ", "")
+                username = parts[1].replace(")", "")
+
+                new_lines.append(f"## {date_part}")
+                new_lines.append("")
+                new_lines.append(f"### {username} (@{username})")
+
+            elif line.startswith("### ") and not line.startswith("#### "):
+                section_name = line.replace("### ", "")
+                new_lines.append(f"#### {section_name}")
+            else:
+                new_lines.append(line)
+
+        return self._write_file_safely('\n'.join(new_lines))

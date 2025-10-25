@@ -285,3 +285,42 @@ def test_user_specific_subsections_in_daily_sections():
         assert "(@" in content_result.content
         assert "#### Todo" in content_result.content
         assert "Fix authentication bug" in content_result.content
+
+def test_migrate_old_format_to_new_format():
+    """Test migration from old format to new user-subsection format"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = os.path.join(temp_dir, "dev-notes.md")
+        
+        # Create file with old format
+        old_content = """# Dev Notes
+
+## 2025-10-24 (@alice)
+### Todo
+- [ ] Fix authentication bug
+- [x] Update documentation
+
+### Notes
+- Left off debugging OAuth flow
+
+## 2025-10-23 (@bob)
+### Todo
+- [ ] Add tests
+"""
+        
+        with open(file_path, 'w') as f:
+            f.write(old_content)
+        
+        handler = MarkdownHandler(file_path)
+        result = handler.migrate_to_new_format()
+        
+        assert result.success
+        
+        # Check new format
+        content_result = handler.read_file()
+        assert "## Project Context" in content_result.content
+        assert "## 2025-10-24" in content_result.content
+        assert "### alice (@alice)" in content_result.content
+        assert "#### Todo" in content_result.content
+        assert "#### Notes" in content_result.content
+        assert "### bob (@bob)" in content_result.content
+        assert "Fix authentication bug" in content_result.content

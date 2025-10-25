@@ -344,46 +344,63 @@ if user and user.email:
     - Create migration function to convert old format to new user-subsection format
     - Add `order migrate` command for existing dev-notes.md files
     - Preserve all existing content during migration
-28. **Update all commands for new format** - Ensure compatibility
+28. **Branch-aware user subsections** - Handle multiple branches per user
+    - Add branch detection using `git branch --show-current`
+    - Format: `### alice-feature-auth (@alice)` and `### alice-main (@alice)`
+    - Add `--branch` flag to all commands for manual branch specification
+    - Auto-detect current git branch when available, fallback to username only
+29. **Update all commands for new format** - Ensure compatibility
     - Update `parse_daily_section()` to handle user subsections and 4-level hierarchy
     - Modify `today`, `search`, `list` commands to work with new structure
     - Test collaboration scenarios to verify conflict resolution
-29. **Team workflow commands** - Daily communication and coordination
+30. **Team workflow commands** - Daily communication and coordination
     - Add `order standup` - Show yesterday's completed, today's planned, blockers
     - Add `order summary --user alice --date 2025-10-24` - Individual daily summary
     - Add `order team-summary --date yesterday` - Team-wide daily overview
     - Add `order blockers` - Show current blockers across team members
 
-### Phase 7: Git Integration & Automation
-29. **Git hooks integration** - Automated workflow integration
+### Phase 7: Task Lifecycle Management
+30. **Task carryover commands** - Handle incomplete tasks across days
+    - Add `order carry "partial task text"` - Move task to today with history trail
+    - Add `order rollover` - Interactive selection of tasks to carry forward
+    - Add `order status` - Show all incomplete tasks across dates with age tracking
+    - Format: `- [ ] Fix bug (carried from 2025-10-23)` for history preservation
+31. **Task status tracking** - Enhanced task states and progress
+    - Add support for `[~]` in-progress tasks that span multiple days
+    - Add `order pause "task"` and `order resume "task"` for long-running work
+    - Add task age indicators `[Day 3]` for tasks older than 1 day
+    - Add `order aging` command to show tasks by age (1 day, 3 days, 1 week+)
+
+### Phase 8: Git Integration & Automation
+32. **Git hooks integration** - Automated workflow integration
     - Add `order commit-hook` - Auto-commit dev-notes.md changes
     - Add `order pre-push-summary` - Generate summary for PR descriptions
     - Add git integration for automatic note timestamps
 
-### Phase 8: Packaging & Distribution
-30. **Global CLI installation** - Add `[tool.poetry.scripts]` section to pyproject.toml
-31. **Package building** - Prepare for distribution with proper packaging
+### Phase 9: Packaging & Distribution
+33. **Global CLI installation** - Add `[tool.poetry.scripts]` section to pyproject.toml
+34. **Package building** - Prepare for distribution with proper packaging
 
-### Phase 9: Polish & Documentation
+### Phase 10: Polish & Documentation
 16. **Rich formatting** - Improve terminal display with colors, tables
 17. **Documentation** - Update README with new usage examples
 
-### Phase 10: Performance & Scalability
-32. **File performance optimization** - Handle large dev-notes.md files efficiently
+### Phase 11: Performance & Scalability
+35. **File performance optimization** - Handle large dev-notes.md files efficiently
     - Implement lazy loading for large files (only read relevant sections)
     - Add file rotation/archiving (monthly or size-based)
     - Optimize search performance for files with 1000+ entries
-33. **Bulk operations** - Efficient batch commands
+36. **Bulk operations** - Efficient batch commands
     - Add `order done --all-today` for marking multiple tasks complete
     - Add `order archive --month 2025-09` for moving old entries
     - Add `order cleanup --completed` for removing done tasks
 
-### Phase 11: External Integrations
-34. **JIRA integration** - Connect with project management
+### Phase 12: External Integrations
+37. **JIRA integration** - Connect with project management
     - Add `order jira-sync` - Create JIRA tickets from todos
     - Add `order jira-update` - Update JIRA status from completed tasks
     - Add `order import-jira --project ABC` - Import JIRA tickets as todos
-35. **Export capabilities** - Share data with other tools
+38. **Export capabilities** - Share data with other tools
     - Add `order export --format json|csv|html` - Export notes in various formats
     - Add `order report --weekly` - Generate weekly team reports
     - Add Slack/Teams webhook integration for team updates
@@ -524,6 +541,13 @@ All 5 steps completed:
    - **Fixed**: Updated existing tests to expect new format (removed old @username in date headers)
    - **Result**: New format: `## 2025-10-25` → `### username (@username)` → `#### Todo/Notes/Ideas`
    - **Benefit**: Eliminates git conflicts - each user gets their own subsection within daily sections
+
+27. **✅ COMPLETED Task 27** - Add migration support to convert existing files to new format:
+   - **Red**: Wrote failing test `test_migrate_old_format_to_new_format()`
+   - **Green**: Implemented `migrate_to_new_format()` method with format conversion logic
+   - **Fixed**: Syntax errors (elif.line → elif line, method name corrections)
+   - **Result**: Old format files can be migrated: `## 2025-10-24 (@alice)` → `## 2025-10-24` + `### alice (@alice)`
+   - **Benefit**: Existing teams can upgrade to new collaboration-friendly format without data loss
 15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
    - **Red**: Wrote failing test `test_invalid_date_format_validation()`
    - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
@@ -586,8 +610,8 @@ All technical debt addressed:
 
 ### 🚧 Currently Working On
 - **Phase 6**: Collaboration-Friendly Format - Critical for team usage and git conflict prevention
-- **Current Task**: Task 27 - Add migration support to convert existing files to new format
-- Next: Create migration function and `order migrate` command for existing dev-notes.md files
+- **Current Task**: Task 28 - Branch-aware user subsections to handle multiple branches per user
+- Next: Add git branch detection and `--branch` flag for format: `### alice-feature-auth (@alice)`
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -606,9 +630,9 @@ All technical debt addressed:
 8. ✅ **Improve docstrings** - SKIPPED (current docstrings sufficient with type hints and clear naming)
 9. ✅ **Add validation** - Input validation for date formats, section types, empty content, search queries
 
-### 📊 Test Status: 27/27 Passing ✅
+### 📊 Test Status: 28/28 Passing ✅
 - ✅ All legacy tests still pass (Task model, original CLI)
-- ✅ All markdown handler tests pass (16/16) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, and MarkdownResult handling
+- ✅ All markdown handler tests pass (17/17) - including comprehensive edge cases, validation tests, delete functionality, new file structure, user subsections, migration support, and MarkdownResult handling
 - ✅ All CLI tests pass (11/11) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery and configuration support
 - **Phase 1**: COMPLETE ✅
 - **Phase 2**: COMPLETE ✅ (4/4 steps done)
@@ -618,7 +642,7 @@ All technical debt addressed:
 - **Phase 4**: COMPLETE ✅ (2/2 steps done) - Polish & Testing (validation tests)
 - **Phase 5**: COMPLETE ✅ (3/3 steps done) - Core Feature Completion
 - **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
-- **Phase 6**: IN PROGRESS 🚧 (2/5 steps done) - Collaboration-Friendly Format
+- **Phase 6**: IN PROGRESS 🚧 (3/6 steps done) - Collaboration-Friendly Format
 - **Phase 7**: PENDING 📋 (0/2 steps done) - Packaging & Distribution  
 - **Phase 8**: PENDING 📋 (0/2 steps done) - Polish & Documentation
 
