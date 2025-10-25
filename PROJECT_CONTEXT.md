@@ -1,0 +1,610 @@
+# Order - Terminal Work Planning Application
+
+## Project Overview
+- **Name**: Order
+- **Type**: Python terminal application for developer notes and daily task tracking
+- **Purpose**: Developer scratchpad/notebook for quick notes, context, and daily todos (NOT for formal project management like JIRA)
+- **Data Storage**: Single markdown file (`dev-notes.md`) for git-friendly collaboration
+- **Development Approach**: Test-Driven Development (TDD) using pytest
+- **Environment**: Poetry for dependency management, Git initialized
+
+## Dependencies
+
+### Main Dependencies
+```bash
+poetry add typer rich
+```
+- `typer` - Modern CLI framework (built on click)
+- `rich` - Beautiful terminal output, tables, progress bars
+
+### Development Dependencies
+```bash
+poetry add --group dev pytest black flake8
+```
+- `pytest` - Testing framework
+- `black` - Code formatter
+- `flake8` - Linting
+
+## Project Structure
+```
+order/
+├── order/
+│   ├── __init__.py
+│   ├── models.py            # Task model implementation (legacy)
+│   ├── cli.py               # CLI interface (needs updating for markdown)
+│   └── markdown_handler.py  # NEW: Markdown file operations
+├── tests/
+│   ├── test_order.py            # Model tests (legacy)
+│   ├── test_order_cli.py        # CLI tests (legacy)
+│   └── test_markdown_handler.py # NEW: Markdown handler tests
+├── pyproject.toml           # Dependencies and config
+└── PROJECT_CONTEXT.md       # This file
+```
+
+## Current Progress
+
+### ✅ Completed TDD Cycles (Legacy - In-Memory Tasks)
+
+#### 1. Task Model Creation
+- **Test**: `test_task_creation()` - Creates task with title, default status, auto-generated ID
+- **Implementation**: `Task` class in `order/models.py`
+- **Status**: PASSING ✅ (Legacy)
+
+#### 2. Task Status Changes
+- **Test**: `test_task_status_change()` - Move task through todo → doing → done
+- **Implementation**: `move_to_doing()` and `move_to_done()` methods
+- **Status**: PASSING ✅ (Legacy)
+
+#### 3. Task Board (List)
+- **Test**: `test_task_board()` - Create multiple tasks in a list
+- **Implementation**: Uses Python lists to store tasks
+- **Status**: PASSING ✅ (Legacy)
+
+#### 4. CLI Interface
+- **Test**: `test_add_task()` - CLI command to add tasks
+- **Implementation**: Typer-based CLI in `order/cli.py`
+- **Status**: PASSING ✅ (Legacy - needs updating for markdown)
+
+### ✅ NEW: Completed TDD Cycles (Markdown-Based)
+
+#### 1. Markdown File Creation
+- **Test**: `test_create_new_markdown_file()` - Creates new dev-notes.md with header
+- **Implementation**: `MarkdownHandler.create_file()` method
+- **Status**: PASSING ✅
+
+#### 2. Markdown File Reading
+- **Test**: `test_read_existing_markdown_file()` - Reads existing markdown content
+- **Implementation**: `MarkdownHandler.read_file()` method
+- **Status**: PASSING ✅
+
+#### 3. Daily Section Parsing
+- **Test**: `test_parse_daily_section()` - Extracts specific day's content from markdown
+- **Implementation**: `MarkdownHandler.parse_daily_section(date)` method
+- **Status**: PASSING ✅
+
+#### 4. Add Content to Daily Section
+- **Test**: `test_add_content_to_daily_section()` - Adds content to specific date's section
+- **Implementation**: `MarkdownHandler.add_content_to_daily_section(date, section_type, content)` method
+- **Status**: PASSING ✅
+
+### ✅ Bug Fixes Completed
+
+#### 1. Task Model Indentation
+- **Issue**: `super().__init__(**data)` incorrectly indented in Task.__init__
+- **Fix**: Moved to proper indentation level
+- **Status**: FIXED ✅
+
+#### 2. CLI Test Mismatch  
+- **Issue**: Test used `["--title", "test"]` but CLI expects `["add", "test"]`
+- **Fix**: Updated test to match subcommand structure
+- **Status**: FIXED ✅
+
+#### 3. Test Organization
+- **Change**: Moved test files to `/tests/` directory
+- **Status**: COMPLETED ✅
+
+## Current Implementation
+
+### MarkdownResult Class (`order/markdown_handler.py`) - COMPLETE ✅
+```python
+from typing import Optional
+import re
+
+class MarkdownResult:
+    def __init__(self, success: bool = True, content: Optional[str] = None, error: Optional[str] = None) -> None:
+        self.success = success
+        self.content = content
+        self.error = error
+```
+
+### MarkdownHandler (`order/markdown_handler.py`) - COMPLETE ✅
+```python
+class MarkdownHandler:
+    def __init__(self, file_path: str) -> None:
+        self.file_path = file_path
+
+    def create_file(self) -> MarkdownResult:
+        # Creates markdown file with error handling
+        
+    def read_file(self) -> MarkdownResult:
+        # Reads file content with error handling
+        
+    def parse_daily_section(self, date: str) -> MarkdownResult:
+        # Validates date format (YYYY-MM-DD) and parses section content
+        
+    def add_content_to_daily_section(self, date: str, section_type: str, content: str) -> MarkdownResult:
+        # Validates date, section type (Todo/Notes/Ideas), and content not empty
+        
+    def mark_task_complete(self, partial_text: str) -> MarkdownResult:
+        # Validates search text not empty and marks tasks complete
+```
+
+### Legacy Task Model (`order/models.py`) - REMOVED
+```python
+# Legacy Task model removed - now using markdown-based storage
+```
+
+### CLI Interface (`order/cli.py`) - COMPLETE ✅
+```python
+import typer
+from datetime import datetime
+from order.markdown_handler import MarkdownHandler
+
+DEV_NOTES_FILE: str = "dev-notes.md"
+TODO_SECTION: str = "Todo"
+NOTES_SECTION: str = "Notes"
+IDEAS_SECTION: str = "Ideas"
+
+def get_handler() -> MarkdownHandler:
+    # Creates handler with file validation and error handling
+
+def get_today() -> str:
+    # Returns current date in YYYY-MM-DD format
+
+@app.command()
+def add(title: str) -> None:
+    # Validates title not empty, adds task with error handling
+    
+@app.command()
+def note(content: str) -> None:
+    # Validates content not empty, adds note with error handling
+    
+@app.command()
+def idea(content: str) -> None:
+    # Validates content not empty, adds idea with error handling
+
+# Additional commands: list, done, today, search with validation
+```
+
+**Usage**: `order add "My task"` - Now creates/updates dev-notes.md with today's todo
+
+## Key Learnings
+
+### TDD Process
+1. **Red**: Write failing test
+2. **Green**: Write minimal code to pass
+3. **Refactor**: Clean up (if needed)
+
+### CLI Development Progress
+- **Current Structure**: Proper subcommands implemented (`order add`, `order list`, `order delete`)
+- **Status**: Basic structure complete, `add` command functional
+- **Next**: Implement functionality for `list` and `delete` commands
+
+### Current CLI Structure
+```bash
+order add "Write documentation"    # ✅ WORKING - Add new task to dev-notes.md
+order note "Left off debugging"    # ✅ WORKING - Add context note to dev-notes.md
+order idea "Consider Redis cache"  # ✅ WORKING - Add idea to dev-notes.md
+order list                        # ✅ WORKING - Show all tasks  
+order done <partial-text>         # ✅ WORKING - Mark todo item as complete
+order today                       # ✅ WORKING - Show just today's section
+order search "keyword"            # ✅ WORKING - Find content across all dates
+order delete <task-id>            # 🚧 STUB - Delete task by ID
+```
+
+### Planned CLI Commands (Updated for Markdown)
+- `order add "todo item"` - ✅ IMPLEMENTED - Add to today's todo section in dev-notes.md
+- `order note "context note"` - ✅ IMPLEMENTED - Add to today's notes section  
+- `order idea "feature idea"` - ✅ IMPLEMENTED - Add to today's ideas section
+- `order done <partial-text>` - 🚧 TODO - Mark todo item as complete
+- `order show` - 🚧 TODO - Display recent notes with Rich formatting
+- `order today` - 🚧 TODO - Show just today's section
+
+### Python Concepts Covered
+- **Classes**: Blueprints for creating objects (Task class)
+- **Objects/Instances**: Individual tasks created from the class
+- **Methods**: Functions that belong to a class (`move_to_doing()`)
+- **`self`**: Refers to the specific instance calling the method
+- **Imports**: Bringing code from other files/modules
+- **CLI Testing**: Using `typer.testing.CliRunner` to test commands
+
+## New Direction: Markdown-Based Developer Notes
+
+### Data Storage Strategy
+- **Single File**: `dev-notes.md` in project root
+- **Format**: Markdown with daily sections and user attribution
+- **Benefits**: Git-friendly, human-readable, collaborative, searchable
+
+### File Structure
+```markdown
+# Dev Notes
+
+## 2025-10-21 (@username)
+### Todo
+- [ ] Investigate slow test performance
+- [ ] Fix authentication bug in login.py
+- [x] Update project documentation
+
+### Notes & Context  
+- Left off debugging email service - check logs in /var/log/
+- API rate limiting kicks in after 100 requests/hour
+- The database migration issue was timezone handling
+
+### Ideas
+- [ ] Consider Redis for caching
+- [ ] Refactor user model structure
+
+### Code Snippets
+```python
+# Quick fix for null pointer
+if user and user.email:
+    send_notification(user.email)
+```
+
+## 2025-10-20 (@teammate)
+...
+```
+
+### CLI Commands (Planned)
+- `order add "todo item"` - Add to today's todo section
+- `order note "context note"` - Add to today's notes section  
+- `order idea "feature idea"` - Add to today's ideas section
+- `order done <partial-text>` - Mark todo item as complete
+- `order show` - Display recent notes with Rich formatting
+- `order today` - Show just today's section
+
+### Collaboration Features
+- **Automatic User Detection**: Get username from git config or system user
+- **User Attribution**: Each day section tagged with `@username` automatically
+- **Git Integration**: Markdown diffs show who changed what
+- **Merge Friendly**: Text-based format reduces conflicts
+- **Searchable History**: Easy to grep through past notes
+
+## Implementation Roadmap
+
+### Phase 1: Core Infrastructure
+1. **Create markdown file handler** - Read/write/parse `dev-notes.md`
+2. **Implement user detection** - Auto-detect username from git config or system
+3. **Add date utilities** - Generate today's date, format sections
+4. **Update Task model** - Adapt for markdown-based storage instead of in-memory
+
+### Phase 2: Basic CLI Commands  
+5. **Refactor `add` command** - Append to today's todo section in markdown
+6. **Implement `note` command** - Add context notes to today's section
+7. **Implement `idea` command** - Add ideas to today's section
+8. **Implement `done` command** - Mark todo items as complete
+9. **Update `list`/`show` command** - Parse and display markdown with Rich
+
+### Phase 2.5: Technical Debt Cleanup (Before Phase 3)
+1. **Extract helper functions in CLI** - Remove code duplication:
+   - Create `get_handler()` function for MarkdownHandler setup
+   - Create `get_today()` function for date formatting
+   - Add constants for filename ("dev-notes.md")
+2. **Fix `add_content_to_daily_section` method** - Currently broken for existing dates:
+   - Properly insert content into existing date sections instead of appending to end
+   - Handle section creation within existing dates
+3. **Update all CLI commands** - Use new helper functions to eliminate duplication
+4. **Add tests for edge cases** - Test existing date handling, file creation, etc.
+
+### Phase 3: Enhanced Features
+10. **Add `today` command** - Show only current day's section
+11. **Implement search functionality** - Find notes by content, date, or user
+12. **Add markdown parsing** - Handle existing file structure, merge conflicts
+13. **Error handling** - File not found, permission issues, malformed markdown
+
+### Phase 4: Polish & Testing
+14. **Update all tests** - Adapt existing tests for markdown storage
+15. **Add new test cases** - File operations, user detection, date handling
+
+### Phase 5: Core Feature Completion
+18. **Implement `delete` command** - Remove tasks by partial text match
+19. **Smart file discovery** - Find dev-notes.md at project root, not create in subdirectories
+    - Walk up directory tree to find existing dev-notes.md
+    - Look for git root as fallback location
+    - Prevent creating multiple markdown files in nested directories
+20. **Configuration system** - Allow users to specify preferred dev-notes.md location
+
+### Phase 5.5: Code Quality & Technical Debt Cleanup
+21. **Fix inconsistent code formatting** - Standardize spacing around operators and parameters
+    - Fix `success = False` vs `success=False` inconsistencies in MarkdownHandler
+    - Standardize error message formatting across all methods
+22. **Extract duplicate validation logic** - Reduce code duplication
+    - Create `_validate_date_format()` helper method (used in 4 places)
+    - Create `_write_file_safely()` helper method for try/except PermissionError pattern (used in 4 places)
+23. **Refactor CLI command duplication** - Consolidate similar command patterns
+    - Extract common validation and error handling from `add`, `note`, `idea` commands
+    - Move search logic from CLI to MarkdownHandler for consistency
+24. **Improve imports and organization** - Clean up module structure
+    - Move `import os` to module level in cli.py
+    - Extract magic strings to constants
+    - Standardize error handling patterns across all CLI commands
+
+### Phase 6: Collaboration-Friendly Format
+25. **Refactor to user-specific subsections** - Eliminate git conflicts in team environments
+    - Change from single date sections to user-specific subsections within dates
+    - Update format: `## 2025-10-24` → `### Alice (@alice)` → `#### Todo/Notes/Ideas`
+    - Modify `add_content_to_daily_section()` to create user-specific sections
+    - Ensure each user gets their own subsection to prevent merge conflicts
+26. **Add migration support** - Convert existing files to new format
+    - Create migration function to convert old format to new user-subsection format
+    - Add `order migrate` command for existing dev-notes.md files
+    - Preserve all existing content during migration
+27. **Update all commands for new format** - Ensure compatibility
+    - Update `parse_daily_section()` to handle user subsections
+    - Modify `today`, `search`, `list` commands to work with new structure
+    - Test collaboration scenarios to verify conflict resolution
+28. **Team workflow commands** - Daily communication and coordination
+    - Add `order standup` - Show yesterday's completed, today's planned, blockers
+    - Add `order summary --user alice --date 2025-10-24` - Individual daily summary
+    - Add `order team-summary --date yesterday` - Team-wide daily overview
+    - Add `order blockers` - Show current blockers across team members
+
+### Phase 7: Git Integration & Automation
+29. **Git hooks integration** - Automated workflow integration
+    - Add `order commit-hook` - Auto-commit dev-notes.md changes
+    - Add `order pre-push-summary` - Generate summary for PR descriptions
+    - Add git integration for automatic note timestamps
+
+### Phase 8: Packaging & Distribution
+30. **Global CLI installation** - Add `[tool.poetry.scripts]` section to pyproject.toml
+31. **Package building** - Prepare for distribution with proper packaging
+
+### Phase 9: Polish & Documentation
+16. **Rich formatting** - Improve terminal display with colors, tables
+17. **Documentation** - Update README with new usage examples
+
+### Phase 10: Performance & Scalability
+32. **File performance optimization** - Handle large dev-notes.md files efficiently
+    - Implement lazy loading for large files (only read relevant sections)
+    - Add file rotation/archiving (monthly or size-based)
+    - Optimize search performance for files with 1000+ entries
+33. **Bulk operations** - Efficient batch commands
+    - Add `order done --all-today` for marking multiple tasks complete
+    - Add `order archive --month 2025-09` for moving old entries
+    - Add `order cleanup --completed` for removing done tasks
+
+### Phase 11: External Integrations
+34. **JIRA integration** - Connect with project management
+    - Add `order jira-sync` - Create JIRA tickets from todos
+    - Add `order jira-update` - Update JIRA status from completed tasks
+    - Add `order import-jira --project ABC` - Import JIRA tickets as todos
+35. **Export capabilities** - Share data with other tools
+    - Add `order export --format json|csv|html` - Export notes in various formats
+    - Add `order report --weekly` - Generate weekly team reports
+    - Add Slack/Teams webhook integration for team updates
+
+### Breaking Changes Required
+- **Storage format**: Switch from in-memory Task objects to markdown file
+- **CLI behavior**: Commands now modify file instead of memory
+- **Test approach**: Mock file operations instead of object creation
+- **Data persistence**: Remove SQLite plans, implement markdown I/O
+
+## Future Features & Design Ideas
+
+### Core Features
+- **Markdown Export**: Generate project status reports as markdown files
+- **Dev Notes Integration**: Automatically update development notes with task progress
+- **Time Tracking**: Add start/end timestamps to tasks
+- **Priority Levels**: High/Medium/Low priority system
+- **Task Dependencies**: Link tasks that depend on others
+- **Tags/Labels**: Categorize tasks with custom tags
+
+### Advanced Features
+- **JIRA Integration**: 
+  - Sync tasks with JIRA tickets
+  - Import JIRA issues as tasks
+  - Update JIRA status from CLI
+  - Bi-directional sync for team collaboration
+- **Git Integration**: 
+  - Link tasks to git branches
+  - Auto-update task status on commits
+  - Generate commit messages from task titles
+- **Reporting**: 
+  - Daily/weekly progress reports
+  - Velocity tracking
+  - Burndown charts in terminal
+
+### Technical Design
+- **Plugin Architecture**: Modular design for integrations
+- **Configuration**: YAML/TOML config file for settings
+- **API Layer**: REST API for external integrations
+- **Export Formats**: JSON, CSV, Markdown, PDF reports
+- **Themes**: Customizable Rich terminal themes
+
+### Development Notes Management
+- **Daily Sections**: Auto-generated with date and user attribution
+- **Multiple Content Types**: Todos, notes/context, ideas, code snippets
+- **User Collaboration**: Track who made what changes via @username tags
+- **Git Integration**: 
+  - Markdown format for readable diffs
+  - Easy merging of concurrent changes
+  - History tracking through git log
+- **Quick Capture**: Fast CLI commands for different note types
+- **Context Preservation**: "Where I left off" notes for continuity
+
+### Neovim Plugin Extension
+- **Core Integration**: 
+  - Open/edit `dev-notes.md` with keybindings
+  - Add tasks directly from Neovim (`:OrderAdd "task"`, `:OrderNote "context"`)
+  - Quick commands without switching to terminal
+- **Enhanced Features**:
+  - Telescope integration to search dev notes history
+  - Floating window for quick task entry
+  - Syntax highlighting for markdown format
+  - Auto-complete for common task patterns
+  - Show today's tasks in sidebar or statusline
+- **Workflow Integration**:
+  - Link tasks to current file/project context
+  - Auto-add context about current working file
+  - Git integration (branch names, commit references)
+- **Implementation**: Use CLI tool as foundation - plugin calls CLI commands or shares markdown parsing logic
+
+## Development Notes
+- User prefers to write all code themselves
+- Assistant provides guidance and direction
+- Focus on minimal, clean implementations
+- **Amazon Q/LLM Role**: Acts as paired programming buddy - provides guidance, identifies issues, suggests approaches, but user writes the code unless explicitly asked to implement
+
+## Current Development Session Progress (2025-10-23)
+
+### ✅ Completed Today
+1. **✅ COMPLETED Phase 2, Step 2** - Added `note` command via TDD:
+   - **Red**: Wrote failing test `test_note_command_creates_markdown()`
+   - **Green**: Implemented minimal `note` command in CLI
+   - **Result**: `order note "context"` now adds to today's Notes section
+2. **✅ COMPLETED Phase 2, Step 3** - Added `idea` command via TDD:
+   - **Red**: Wrote failing test `test_idea_command_creates_markdown()`
+   - **Green**: Implemented minimal `idea` command in CLI
+   - **Result**: `order idea "feature idea"` now adds to today's Ideas section
+3. **Fixed syntax errors** - Corrected test file issues (missing commas, typos, spacing)
+4. **Maintained test coverage** - All tests still passing
+
+### ✅ Completed Today (Continued)
+4. **✅ COMPLETED Phase 2, Step 4** - Updated `list` command via TDD:
+   - **Red**: Wrote failing test `test_list_command_displays_markdown_content()`
+   - **Green**: Implemented `list` command to read and display markdown content
+   - **Result**: `order list` now shows full dev-notes.md content instead of stub
+
+### ✅ Completed Today (Continued)
+8. **✅ COMPLETED Phase 3, Step 1** - Implemented `done` command via TDD:
+   - **Red**: Wrote failing test `test_done_command_marks_task_complete()`
+   - **Green**: Added `mark_task_complete()` method to MarkdownHandler
+   - **Green**: Added `done` command to CLI with partial text matching
+   - **Result**: `order done "partial text"` now marks matching tasks as complete (- [ ] → - [x])
+
+### ✅ Completed Today (Continued)
+13. **✅ STARTED Phase 4** - Polish & Testing:
+   - **Task 14**: ✅ Updated all tests (already complete from Phase 3.5 - all 18 tests passing with MarkdownResult)
+   - **Task 15**: 🚧 Adding new test cases - Cleaned up test file (removed unused imports), ready to add validation tests
+   - **Neovim Config**: ✅ Updated Pyright LSP settings to reduce pytest assertion warnings
+   - **Next**: Add validation tests for error cases (invalid dates, section types, empty inputs)
+   - **High Priority (3/3)**: ✅ Removed unused imports, standardized error handling, fixed handler creation
+   - **Medium Priority (3/3)**: ✅ Extracted constants, refactored methods, standardized return values with MarkdownResult
+   - **Low Priority (3/3)**: ✅ Added comprehensive type hints, skipped docstrings (sufficient), added input validation
+   - **Validation Features**: Date format (YYYY-MM-DD), section types (Todo/Notes/Ideas), empty content prevention
+   - **Result**: All 18 tests passing, robust error handling, type-safe code, comprehensive validation
+   - **Red**: Wrote failing test `test_add_content_handles_permission_error()`
+   - **Green**: Added try/catch blocks around file write operations in `add_content_to_daily_section()`
+   - **Result**: Application now handles permission errors gracefully instead of crashing
+
+### 🎉 Phase 3: Enhanced Features - COMPLETE ✅
+All 5 steps completed:
+1. ✅ `done` command - Mark tasks complete
+2. ✅ `today` command - Show current day's section  
+3. ✅ `search` command - Find content across dates
+4. ✅ User attribution - Auto-add @username to new sections
+5. ✅ Error handling - Graceful permission error handling
+
+### ✅ Completed Today (2025-10-24)
+15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
+   - **Red**: Wrote failing test `test_invalid_date_format_validation()`
+   - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
+   - **Red**: Wrote failing test `test_invalid_section_type_validation()`
+   - **Green**: Improved section validation to handle empty strings
+   - **Red**: Wrote failing test `test_empty_search_query_validation()`
+   - **Green**: Confirmed existing validation works for empty search queries
+   - **Result**: All validation edge cases now properly tested and handled
+
+18. **✅ COMPLETED Task 18** - Implement `delete` command for removing tasks:
+   - **Red**: Wrote failing test `test_delete_command_removes_task()`
+   - **Green**: Added `delete_task()` method to MarkdownHandler with partial text matching
+   - **Green**: Updated CLI `delete` command to use new handler method
+   - **Fixed**: Corrected test indentation and typos in implementation
+   - **Result**: `order delete "partial text"` now removes matching tasks from dev-notes.md
+
+19. **✅ COMPLETED Task 19** - Smart file discovery for project integration:
+   - **Red**: Wrote failing test `test_smart_file_discovery_finds_existing_file()`
+   - **Green**: Added `find_dev_notes_file()` function with directory tree walking
+   - **Green**: Updated `get_handler()` to use smart file discovery
+   - **Fixed**: Corrected test indentation issues
+   - **Result**: CLI now finds existing dev-notes.md in parent directories instead of creating duplicates
+
+20. **✅ COMPLETED Task 20** - Configuration system for custom file paths:
+   - **Red**: Wrote failing test `test_configuration_system_respects_custom_file_path()`
+   - **Green**: Enhanced `find_dev_notes_file()` to check `ORDER_NOTES_FILE` environment variable
+   - **Fixed**: Corrected test assertions and import issues
+   - **Result**: Users can now specify custom file paths via `ORDER_NOTES_FILE` environment variable
+
+21. **✅ COMPLETED Task 21** - Fix inconsistent code formatting:
+   - **Fixed**: Standardized spacing around operators (`success=False` vs `success = False`)
+   - **Fixed**: Consistent error message formatting across all methods
+   - **Result**: Clean, consistent code style throughout the project
+
+22. **✅ COMPLETED Task 22** - Extract duplicate validation logic:
+   - **Refactored**: Created `_validate_date_format()` helper method (eliminated 4 duplications)
+   - **Refactored**: Created `_write_file_safely()` helper method (eliminated 4 try/except blocks)
+   - **Result**: Reduced code duplication by ~40 lines, improved maintainability
+
+23. **✅ COMPLETED Task 23** - Refactor CLI command duplication:
+   - **Refactored**: Consolidated `add`, `note`, `idea` commands with shared `_add_content_with_feedback()` helper
+   - **Moved**: Search logic from CLI to MarkdownHandler (`search_content()` method)
+   - **Standardized**: Error handling patterns across all CLI commands
+   - **Result**: Consistent command behavior, better separation of concerns
+
+24. **✅ COMPLETED Task 24** - Improve imports and organization:
+   - **Fixed**: Moved `import os` to module level in cli.py
+   - **Organized**: Extracted magic strings to constants where appropriate
+   - **Standardized**: Error handling patterns with consistent exit codes
+   - **Result**: Cleaner module structure and better organization
+
+### 🎉 PHASE 5.5 COMPLETE - Code Quality & Technical Debt Cleanup ✅
+All technical debt addressed:
+- ✅ Consistent code formatting and style
+- ✅ Eliminated duplicate validation and file operations
+- ✅ Refactored CLI command patterns for maintainability
+- ✅ Improved imports and module organization
+- ✅ Better separation of concerns (search logic moved to handler)
+- ✅ Reduced codebase by ~40 lines while maintaining all functionality
+
+### 🚧 Currently Working On
+- **Phase 6**: Collaboration-Friendly Format - Critical for team usage and git conflict prevention
+- **Current Task**: Task 25 - Refactor to user-specific subsections within daily sections
+- Next: Implement new format where each user gets their own subsection to eliminate merge conflicts
+
+### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
+
+#### High Priority Tasks (3/3 ✅):
+1. ✅ **Remove unused imports and legacy code** - Removed pydantic dependency, cleaned up imports
+2. ✅ **Standardize error handling** - Consistent permission error handling across all methods
+3. ✅ **Fix inconsistent handler creation** - All CLI commands use `get_handler()` consistently
+
+#### Medium Priority Tasks (3/3 ✅):
+4. ✅ **Extract constants for maintainability** - Added TODO_SECTION, NOTES_SECTION, IDEAS_SECTION constants
+5. ✅ **Refactor complex methods** - Methods already well-structured with private helper functions
+6. ✅ **Standardize return values** - Implemented MarkdownResult class for consistent success/content/error structure
+
+#### Low Priority Tasks (3/3 ✅):
+7. ✅ **Add type hints** - Comprehensive type annotations for all classes and functions
+8. ✅ **Improve docstrings** - SKIPPED (current docstrings sufficient with type hints and clear naming)
+9. ✅ **Add validation** - Input validation for date formats, section types, empty content, search queries
+
+### 📊 Test Status: 25/25 Passing ✅
+- ✅ All legacy tests still pass (Task model, original CLI)
+- ✅ All markdown handler tests pass (14/14) - including comprehensive edge cases, validation tests, delete functionality, and MarkdownResult handling
+- ✅ All CLI tests pass (11/11) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery and configuration support
+- **Phase 1**: COMPLETE ✅
+- **Phase 2**: COMPLETE ✅ (4/4 steps done)
+- **Phase 2.5**: COMPLETE ✅ (4/4 steps done - technical debt cleanup finished)
+- **Phase 3**: COMPLETE ✅ (5/5 steps done)
+- **Phase 3.5**: COMPLETE ✅ (9/9 total tasks done) - Technical Debt Cleanup
+- **Phase 4**: COMPLETE ✅ (2/2 steps done) - Polish & Testing (validation tests)
+- **Phase 5**: COMPLETE ✅ (3/3 steps done) - Core Feature Completion
+- **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
+- **Phase 6**: STARTED 🚧 (0/4 steps done) - Collaboration-Friendly Format
+- **Phase 7**: PENDING 📋 (0/2 steps done) - Packaging & Distribution  
+- **Phase 8**: PENDING 📋 (0/2 steps done) - Polish & Documentation
+
+### 🎯 Next Session Goals
+1. **Phase 4**: Polish & Testing - Begin final improvements and comprehensive testing
+2. **Phase 5**: Global installation & smart file discovery
+3. **Future**: Neovim plugin integration and advanced features

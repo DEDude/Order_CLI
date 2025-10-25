@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "order"
+version = "0.1.0"
+description = "Productivity CLI Tool"
+authors = ["Iwan Dyke <iwan.dyke@dvla.gov.uk>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+typer = "^0.20.0"
+rich = "^14.2.0"
+
+[tool.poetry.scripts]
+order = "order.cli:app"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+black = "^25.9.0"
+flake8 = "^7.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
