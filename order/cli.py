@@ -30,13 +30,13 @@ def _validate_content(content: str, content_type: str) -> None:
         typer.echo(f"Error: {content_type} content cannot be empty")
         raise typer.Exit(1)
 
-def _add_content_with_feedback(section_type: str, content: str, content_type: str) -> None:
+def _add_content_with_feedback(section_type: str, content: str, content_type: str, branch: str = None) -> None:
     """Add content to daily section with consistent error handling"""
     _validate_content(content, content_type)
     
     handler = get_handler()
     today = get_today()
-    result = handler.add_content_to_daily_section(today, section_type, content)
+    result = handler.add_content_to_daily_section(today, section_type, content, branch)
     
     if result.success:
         typer.echo(f"{content_type} added: {content}")
@@ -75,20 +75,20 @@ def get_today() -> str:
 app = typer.Typer()
 
 @app.command()
-def add(title: str) -> None:
+def add(title: str, branch: str = typer.Option(None, "--branch", help="Override git branch detection")) -> None:
     """Add a new task"""
     task_content = f"- [ ] {title}"
-    _add_content_with_feedback(TODO_SECTION, task_content, "Task")
+    _add_content_with_feedback(TODO_SECTION, task_content, "Task", branch)
 
 @app.command()
-def note(content: str) -> None:
+def note(content: str, branch: str = typer.Option(None, "--branch", help="Override git branch detection")) -> None:
     """Add a note to today's section"""
-    _add_content_with_feedback(NOTES_SECTION, content, "Note")
+    _add_content_with_feedback(NOTES_SECTION, content, "Note", branch)
 
 @app.command()    
-def idea(content: str) -> None:
+def idea(content: str, branch: str = typer.Option(None, "--branch", help="Override git branch detection")) -> None:
     """Add an idea to today's section"""
-    _add_content_with_feedback(IDEAS_SECTION, content, "Idea")
+    _add_content_with_feedback(IDEAS_SECTION, content, "Idea", branch)
 
 @app.command()
 def list() -> None:

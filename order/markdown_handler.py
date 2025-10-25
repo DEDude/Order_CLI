@@ -84,7 +84,7 @@ class MarkdownHandler:
 
         return MarkdownResult(success=True, content='\n'.join(section_lines))
 
-    def add_content_to_daily_section(self, date: str, section_type: str, content: str) -> MarkdownResult:
+    def add_content_to_daily_section(self, date: str, section_type: str, content: str, branch_override: str = None) -> MarkdownResult:
         """Add content to a daily section, creating the date section if needed"""
         validation_result = self._validate_date_format(date)
         if not validation_result.success:
@@ -102,9 +102,9 @@ class MarkdownHandler:
             return result
 
         if f"## {date}" not in result.content:
-            return self._create_new_date_section(date, section_type, content)
+            return self._create_new_date_section(date, section_type, content, branch_override)
         else:
-            return self._add_to_existing_date_section(date, section_type, content)
+            return self._add_to_existing_date_section(date, section_type, content, branch_override)
 
     def mark_task_complete(self, partial_text: str) -> MarkdownResult:
         """Find and mark a task as complete based on partial text match"""
@@ -129,7 +129,7 @@ class MarkdownHandler:
         import getpass
         return getpass.getuser()
 
-    def _create_new_date_section(self, date: str, section_type: str, content: str) -> MarkdownResult:
+    def _create_new_date_section(self, date: str, section_type: str, content: str, branch_override: str = None) -> MarkdownResult:
         """Create a new date section with user-specific subsection"""
         validation_result = self._validate_date_format(date)
         if not validation_result.success:
@@ -148,7 +148,7 @@ class MarkdownHandler:
                 break
 
         username = self.get_username()
-        branch = self.get_current_branch()
+        branch = branch_override if branch_override is not None else self.get_current_branch()
         user_section = f"{username}-{branch}" if branch else username
         
         new_section = [
@@ -166,7 +166,7 @@ class MarkdownHandler:
 
         return self._write_file_safely('\n'.join(lines))
 
-    def _add_to_existing_date_section(self, date: str, section_type: str, content: str) -> MarkdownResult:
+    def _add_to_existing_date_section(self, date: str, section_type: str, content: str, branch_override: str = None) -> MarkdownResult:
         """Add content to existing date section"""
         validation_result = self._validate_date_format(date)
         if not validation_result.success:

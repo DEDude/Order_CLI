@@ -314,3 +314,25 @@ def test_configuration_system_respects_custom_file_path():
             os.chdir(original_dir)
             if "ORDER_NOTES_FILE" in os.environ:
                 del os.environ["ORDER_NOTES_FILE"]
+
+def test_add_command_with_branch_flag():
+    """Test that --branch flag overrides git branch detection"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+
+        try:
+            runner = CliRunner()
+            result = runner.invoke(app, ["add", "Test task", "--branch", "custom-feature"])
+
+            assert result.exit_code == 0
+            assert os.path.exists("dev-notes.md")
+
+            with open("dev-notes.md", "r") as f:
+                    content = f.read()
+
+                    assert "custom-feature" in content
+                    assert "Test task" in content
+
+        finally:
+            os.chdir(original_dir)

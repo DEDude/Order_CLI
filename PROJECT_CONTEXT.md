@@ -347,8 +347,13 @@ if user and user.email:
 28. **✅ COMPLETED Task 28** - Branch-aware user subsections to handle multiple branches per user:
     - ✅ Add branch detection using `git branch --show-current`
     - ✅ Format: `### alice-feature-auth (@alice)` and `### alice-main (@alice)`
-    - 🚧 TODO: Add `--branch` flag to all commands for manual branch specification
     - ✅ Auto-detect current git branch when available, fallback to username only
+
+28.5. **✅ COMPLETED Task 28.5** - Add `--branch` flag to CLI commands for manual branch override:
+    - ✅ Added `--branch` flag to `add`, `note`, and `idea` commands
+    - ✅ Users can override git detection: `order add "task" --branch "custom-feature"`
+    - ✅ Branch override parameter flows through CLI → MarkdownHandler → section creation
+    - ✅ Maintains backward compatibility when flag not used
 28.5. **Task assignment functionality** - Assign tasks and ideas to team members for collaborative efforts
     - Add `--to`/`--assign` flags to existing `add`, `idea` commands: `order add "Fix bug" --to alice`
     - New `assign` command for assigning existing tasks: `order assign "Fix login bug" --to alice`
@@ -563,6 +568,13 @@ All 5 steps completed:
    - **Fixed**: Import issues, duplicate code removal, test file cleanup
    - **Result**: Format now supports `### username-branch (@username)` when git branch detected
    - **Benefit**: Users working on multiple branches get separate subsections, preventing conflicts
+
+28.5. **✅ COMPLETED Task 28.5** - Add `--branch` flag to CLI commands for manual branch override:
+   - **Red**: Wrote failing test `test_add_command_with_branch_flag()`
+   - **Green**: Added `--branch` parameter to `add`, `note`, and `idea` commands
+   - **Green**: Updated `_add_content_with_feedback()` and MarkdownHandler to accept branch override
+   - **Result**: Users can now manually specify branch: `order add "task" --branch "custom-feature"`
+   - **Benefit**: Full control over section organization, works in non-git environments
 15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
    - **Red**: Wrote failing test `test_invalid_date_format_validation()`
    - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
@@ -625,8 +637,8 @@ All technical debt addressed:
 
 ### 🚧 Currently Working On
 - **Phase 6**: Collaboration-Friendly Format - Critical for team usage and git conflict prevention
-- **Current Task**: Task 28.5 - Add `--branch` flag to CLI commands for manual branch override
-- Next: Task 29 - Update all commands for new format compatibility, then team workflow commands
+- **Current Task**: Task 29 - Update all commands for new format compatibility
+- Next: Task 30 - Team workflow commands (standup, summary, blockers)
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -657,7 +669,7 @@ All technical debt addressed:
 - **Phase 4**: COMPLETE ✅ (2/2 steps done) - Polish & Testing (validation tests)
 - **Phase 5**: COMPLETE ✅ (3/3 steps done) - Core Feature Completion
 - **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
-- **Phase 6**: IN PROGRESS 🚧 (4/6 steps done) - Collaboration-Friendly Format
+- **Phase 6**: IN PROGRESS 🚧 (5/6 steps done) - Collaboration-Friendly Format
 - **Phase 7**: PENDING 📋 (0/2 steps done) - Packaging & Distribution  
 - **Phase 8**: PENDING 📋 (0/2 steps done) - Polish & Documentation
 
