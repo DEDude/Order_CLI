@@ -330,20 +330,25 @@ if user and user.email:
     - Standardize error handling patterns across all CLI commands
 
 ### Phase 6: Collaboration-Friendly Format
-25. **Refactor to user-specific subsections** - Eliminate git conflicts in team environments
+25. **Design optimal markdown structure** - Create human-readable, collaboration-friendly format
+    - Implement new structure: Project Context (top-level) + Daily sections with user subsections
+    - Format: `# Dev Notes` → `## Project Context` → `## 2025-10-25` → `### Alice (@alice)` → `#### Tasks/Notes/Ideas`
+    - Add `order context "update project info"` command for project-level information
+    - Ensure project context persists while daily entries focus on individual progress
+26. **Refactor to user-specific subsections** - Eliminate git conflicts in team environments
     - Change from single date sections to user-specific subsections within dates
-    - Update format: `## 2025-10-24` → `### Alice (@alice)` → `#### Todo/Notes/Ideas`
     - Modify `add_content_to_daily_section()` to create user-specific sections
     - Ensure each user gets their own subsection to prevent merge conflicts
-26. **Add migration support** - Convert existing files to new format
+    - Update file creation to include "Project Context" section
+27. **Add migration support** - Convert existing files to new format
     - Create migration function to convert old format to new user-subsection format
     - Add `order migrate` command for existing dev-notes.md files
     - Preserve all existing content during migration
-27. **Update all commands for new format** - Ensure compatibility
-    - Update `parse_daily_section()` to handle user subsections
+28. **Update all commands for new format** - Ensure compatibility
+    - Update `parse_daily_section()` to handle user subsections and 4-level hierarchy
     - Modify `today`, `search`, `list` commands to work with new structure
     - Test collaboration scenarios to verify conflict resolution
-28. **Team workflow commands** - Daily communication and coordination
+29. **Team workflow commands** - Daily communication and coordination
     - Add `order standup` - Show yesterday's completed, today's planned, blockers
     - Add `order summary --user alice --date 2025-10-24` - Individual daily summary
     - Add `order team-summary --date yesterday` - Team-wide daily overview
@@ -505,7 +510,13 @@ All 5 steps completed:
 4. ✅ User attribution - Auto-add @username to new sections
 5. ✅ Error handling - Graceful permission error handling
 
-### ✅ Completed Today (2025-10-24)
+### ✅ Completed Today (2025-10-25)
+25. **✅ COMPLETED Task 25** - Design optimal markdown structure with Project Context:
+   - **Red**: Wrote failing test `test_new_file_structure_with_project_context()`
+   - **Green**: Updated `create_file()` method to include Project Context section
+   - **Fixed**: Resolved failing `test_today_command_shows_only_current_day` (date issue)
+   - **Result**: New files now created with structure: `# Dev Notes` → `## Project Context` → placeholder text
+   - **Benefit**: Establishes foundation for human-readable, collaboration-friendly format
 15. **✅ COMPLETED Task 15** - Add new test cases for validation errors and edge cases:
    - **Red**: Wrote failing test `test_invalid_date_format_validation()`
    - **Green**: Enhanced date validation to catch invalid months/days (e.g., "2025-13-01")
@@ -568,8 +579,8 @@ All technical debt addressed:
 
 ### 🚧 Currently Working On
 - **Phase 6**: Collaboration-Friendly Format - Critical for team usage and git conflict prevention
-- **Current Task**: Task 25 - Refactor to user-specific subsections within daily sections
-- Next: Implement new format where each user gets their own subsection to eliminate merge conflicts
+- **Current Task**: Task 26 - Refactor to user-specific subsections within daily sections
+- Next: Implement user subsections format: `## 2025-10-25` → `### Alice (@alice)` → `#### Tasks/Notes/Ideas`
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -588,9 +599,9 @@ All technical debt addressed:
 8. ✅ **Improve docstrings** - SKIPPED (current docstrings sufficient with type hints and clear naming)
 9. ✅ **Add validation** - Input validation for date formats, section types, empty content, search queries
 
-### 📊 Test Status: 25/25 Passing ✅
+### 📊 Test Status: 26/26 Passing ✅
 - ✅ All legacy tests still pass (Task model, original CLI)
-- ✅ All markdown handler tests pass (14/14) - including comprehensive edge cases, validation tests, delete functionality, and MarkdownResult handling
+- ✅ All markdown handler tests pass (15/15) - including comprehensive edge cases, validation tests, delete functionality, new file structure, and MarkdownResult handling
 - ✅ All CLI tests pass (11/11) - including `add`, `note`, `idea`, `list`, `done`, `today`, `search`, `delete` commands with smart file discovery and configuration support
 - **Phase 1**: COMPLETE ✅
 - **Phase 2**: COMPLETE ✅ (4/4 steps done)
@@ -600,7 +611,7 @@ All technical debt addressed:
 - **Phase 4**: COMPLETE ✅ (2/2 steps done) - Polish & Testing (validation tests)
 - **Phase 5**: COMPLETE ✅ (3/3 steps done) - Core Feature Completion
 - **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
-- **Phase 6**: STARTED 🚧 (0/4 steps done) - Collaboration-Friendly Format
+- **Phase 6**: IN PROGRESS 🚧 (1/5 steps done) - Collaboration-Friendly Format
 - **Phase 7**: PENDING 📋 (0/2 steps done) - Packaging & Distribution  
 - **Phase 8**: PENDING 📋 (0/2 steps done) - Polish & Documentation
 

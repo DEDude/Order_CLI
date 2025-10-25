@@ -37,7 +37,14 @@ class MarkdownHandler:
     def create_file(self) -> MarkdownResult:
         try:
             with open(self.file_path, 'w') as f:
-                f.write("# Dev Notes\n")
+                f.write("""# Dev Notes
+
+## Project Context
+
+*Add project-level context, goals, and background information here.*
+
+""")
+
             return MarkdownResult(success=True)
         except Exception as e:
             return MarkdownResult(success=False, error=str(e))

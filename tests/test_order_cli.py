@@ -155,7 +155,7 @@ def test_today_command_shows_only_current_day():
 ### Notes
 - Today's note
 
-## 2025-10-25
+## 2025-10-26
 ### Todo
 - [ ] Future task
 """)

@@ -242,3 +242,31 @@ def test_empty_search_query_validation():
             
             assert not result.success
             assert "Search text cannot be empty" in result.error
+
+def test_new_file_structure_with_project_context():
+    """Test that new files are created with Project Context section"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        file_path = os.path.join(temp_dir, "dev-notes.md")
+
+        handler = MarkdownHandler(file_path)
+        
+        result = handler.create_file()
+
+        assert result.success
+
+        content_result = handler.read_file()
+
+        assert content_result.success
+
+        expected_structure = """# Dev Notes
+
+## Project Context
+
+*Add project-level context, goals, and background information here.*
+
+"""
+
+        assert expected_structure in content_result.content
+
+
+        
