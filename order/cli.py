@@ -145,6 +145,29 @@ def carry(partial_text: str) -> None:
 
     handle_result(result, f"Task carried forward: {result.content}", "Failed to carry task")
 
+@app.command("66")
+def order_66() -> None:
+    """Execute Order 66"""
+    jedi_list = [
+        "Master Yoda",
+        "Obi-Wan Kenobi", 
+        "Mace Windu",
+        "Anakin Skywalker",
+        "Ahsoka Tano",
+        "Ki-Adi-Mundi",
+        "Plo Koon",
+        "Kit Fisto",
+        "Aayla Secura",
+        "Luminara Unduli"
+    ]
+    
+    typer.echo("EXECUTING ORDER 66")
+    typer.echo("The time has come. Execute Order 66.")
+    typer.echo("\nJedi Target List:")
+    for jedi in jedi_list:
+        typer.echo(f"  {jedi}")
+    typer.echo("\nGood soldiers follow orders.")
+
 @app.command()
 def install_hooks() -> None:
     """Install git hooks for automatic dev-notes.md integration"""
