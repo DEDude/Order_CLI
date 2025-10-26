@@ -2,10 +2,14 @@ from typing import Optional
 import re
 import os
 import subprocess
+import getpass
+from datetime import datetime
 
-# Task status constants
 TASK_INCOMPLETE = "- [ ]"
 TASK_COMPLETE = "- [x]"
+DATE_FORMAT_PATTERN = r'^\d{4}-\d{2}-\d{2}$'
+DATE_SECTION_PATTERN = r'## \d{4}-\d{2}-\d{2}'
+VALID_SECTION_TYPES = ["Todo", "Notes", "Ideas"]
 
 class MarkdownResult:
     def __init__(self, success: bool = True, content: Optional[str] = None, error: Optional[str] = None) -> None:
@@ -19,7 +23,7 @@ class MarkdownHandler:
 
     def _validate_date_format(self, date: str) -> MarkdownResult:
         """Validate date format and return error if invalid"""
-        if not re.match(r'^\d{4}-\d{2}-\d{2}$', date):
+        if not re.match(DATE_FORMAT_PATTERN, date):
             return MarkdownResult(success=False, error="Invalid date format. Use YYYY-MM-DD")
         
         try:
@@ -103,9 +107,8 @@ class MarkdownHandler:
         if not validation_result.success:
             return validation_result
 
-        valid_sections = ["Todo", "Notes", "Ideas"]
-        if not section_type or section_type not in valid_sections:
-            return MarkdownResult(success=False, error=f"Invalid section type. Use: {valid_sections}")
+        if not section_type or section_type not in VALID_SECTION_TYPES:
+            return MarkdownResult(success=False, error=f"Invalid section type. Use: {VALID_SECTION_TYPES}")
         
         if not content.strip():
             return MarkdownResult(success=False, error="Content cannot be empty")
@@ -139,7 +142,6 @@ class MarkdownHandler:
 
     def get_username(self) -> str:
         """Get current username for attribute section"""
-        import getpass
         return getpass.getuser()
 
     def _create_new_date_section(self, date: str, section_type: str, content: str, branch_override: str = None) -> MarkdownResult:
@@ -206,14 +208,12 @@ class MarkdownHandler:
             if line.startswith(f"## {date}"):
                 in_target_date = True
             elif line.startswith("## ") and in_target_date and not section_added:
-                # Insert before next date section
                 result_lines.insert(-1, f"### {section_type}")
                 result_lines.insert(-1, content)
                 result_lines.insert(-1, "")
                 section_added = True
                 in_target_date = False
 
-        # If we're still in target date (no next section found), append at end
         if in_target_date and not section_added:
             result_lines.append(f"### {section_type}")
             result_lines.append(content)
@@ -312,6 +312,26 @@ class MarkdownHandler:
             pass
         return ""
 
+    def _find_task_in_content(self, lines: list, partial_text: str) -> tuple:
+        """Find task and its date in content lines. Returns (task_found, task_date, task_index)"""
+        current_date = None
+        for i, line in enumerate(lines):
+            if line.startswith("## ") and re.match(DATE_SECTION_PATTERN, line):
+                current_date = line.replace("## ", "")
+            elif TASK_INCOMPLETE in line and partial_text.lower() in line.lower():
+                return line.strip(), current_date, i
+        return None, None, -1
+
+    def _remove_task_from_lines(self, lines: list, task_index: int) -> list:
+        """Remove task at given index from lines"""
+        lines.pop(task_index)
+        return lines
+
+    def _create_carried_task(self, task_found: str, task_date: str) -> str:
+        """Create carried task with history trail"""
+        task_text = task_found.replace(TASK_INCOMPLETE, "").strip()
+        return f"{TASK_INCOMPLETE} {task_text} (carried from {task_date})"
+
     def carry_task_forward(self, partial_text: str) -> MarkdownResult:
         """Find task, move it to today with history trail"""
         if not partial_text.strip():
@@ -322,33 +342,18 @@ class MarkdownHandler:
             return result
         
         lines = result.content.split('\n')
-        task_found = None
-        task_date = None
-        
-        # Find the task and its date
-        current_date = None
-        for i, line in enumerate(lines):
-            if line.startswith("## ") and re.match(r'## \d{4}-\d{2}-\d{2}', line):
-                current_date = line.replace("## ", "")
-            elif TASK_INCOMPLETE in line and partial_text.lower() in line.lower():
-                task_found = line.strip()
-                task_date = current_date
-                lines.pop(i)
-                break
+        task_found, task_date, task_index = self._find_task_in_content(lines, partial_text)
         
         if not task_found:
             return MarkdownResult(success=False, error=f"No task found containing '{partial_text}'")
         
-        # Write the modified content (with removed task) first
-        write_result = self._write_file_safely('\n'.join(lines))
+        updated_lines = self._remove_task_from_lines(lines, task_index)
+        write_result = self._write_file_safely('\n'.join(updated_lines))
         if not write_result.success:
             return write_result
         
-        # Add to today with history
-        from datetime import datetime
         today = datetime.now().strftime("%Y-%m-%d")
-        task_text = task_found.replace(TASK_INCOMPLETE, "").strip()
-        carried_task = f"{TASK_INCOMPLETE} {task_text} (carried from {task_date})"
+        carried_task = self._create_carried_task(task_found, task_date)
         
         add_result = self.add_content_to_daily_section(today, "Todo", carried_task)
         if add_result.success:

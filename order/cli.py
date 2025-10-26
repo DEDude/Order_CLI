@@ -1,7 +1,7 @@
 import os
 import typer
 from datetime import datetime
-from order.markdown_handler import MarkdownHandler
+from order.markdown_handler import MarkdownHandler, MarkdownResult
 
 DEV_NOTES_FILE: str = "dev-notes.md"
 TODO_SECTION: str = "Todo"
@@ -41,7 +41,7 @@ def _add_content_with_feedback(section_type: str, content: str, content_type: st
     if result.success:
         typer.echo(f"{content_type} added: {content}")
     else:
-        typer.echo(f"Error: {result.error}")
+        typer.echo(f"Error: Failed to add content - {result.error}")
         raise typer.Exit(1)
 
 def get_handler() -> MarkdownHandler:
@@ -53,13 +53,22 @@ def get_handler() -> MarkdownHandler:
     if not result.success:
         create_result = handler.create_file()
         if not create_result.success:
-            typer.echo(f"Error creating file: {create_result.error}")
+            typer.echo(f"Error: Failed to create file - {create_result.error}")
             raise typer.Exit(1)
     return handler
 
 def get_today() -> str:
     """Get today's date in YYYY-MM-DD format"""
     return datetime.now().strftime("%Y-%m-%d")
+
+def handle_result(result: MarkdownResult, success_msg: str, error_action: str) -> None:
+    """Handle MarkdownResult with consistent success/error patterns"""
+    if result.success:
+        typer.echo(success_msg)
+    else:
+        typer.echo(f"Error: {error_action} - {result.error}")
+
+        raise typer.Exit(1)
 
 app = typer.Typer()
 
@@ -88,8 +97,7 @@ def list() -> None:
     if result.success:
         typer.echo(result.content)
     else:
-        typer.echo(f"Error reading file: {result.error}")
-        raise typer.Exit(1)
+        handle_result(result, "", "Failed to read file")
 
 @app.command()
 def delete(task_id: str) -> None:
@@ -97,11 +105,7 @@ def delete(task_id: str) -> None:
     handler = get_handler()
     result = handler.delete_task(task_id)
     
-    if result.success:
-        typer.echo(f"Task containing '{task_id}' deleted")
-    else:
-        typer.echo(f"Failed to delete task: {result.error}")
-        raise typer.Exit(1)
+    handle_result(result, f"Task containing '{task_id}' deleted", "Failed to delete task")
 
 
 
@@ -111,11 +115,7 @@ def done(partial_text: str) -> None:
     handler = get_handler()
     result = handler.mark_task_complete(partial_text)
     
-    if result.success:
-        typer.echo(f"Task containing '{partial_text}' marked as complete")
-    else:
-        typer.echo(f"Failed to mark task as complete: {result.error}")
-        raise typer.Exit(1)
+    handle_result(result, f"Task containing '{partial_text}' marked as complete", "Failed to mark task complete")
 
 @app.command()
 def today() -> None:
@@ -127,8 +127,7 @@ def today() -> None:
     if result.success:
         typer.echo(result.content)
     else:
-        typer.echo(f"Error reading today's section: {result.error}")
-        raise typer.Exit(1)
+        handle_result(result, "", "Failed to read today's section")
 
 @app.command()
 def search(query: str) -> None:
@@ -139,17 +138,12 @@ def search(query: str) -> None:
     if result.success:
         typer.echo(result.content)
     else:
-        typer.echo(result.error)
-        raise typer.Exit(1)
+        handle_result(result, "", "Search failed")
 
 @app.command()
 def carry(partial_text: str) -> None:
-    """Move a tasj to today with history trail"""
+    """Move a task to today with history trail"""
     handler = get_handler()
     result = handler.carry_task_forward(partial_text)
 
-    if result.success:
-        typer.echo(f"Task carried forward: {result.content}")
-    else:
-        typer.echo(f"Failed to carry task: {result.error}")
-        raise typer.Exit(1)
+    handle_result(result, f"Task carried forward: {result.content}", "Failed to carry task")
