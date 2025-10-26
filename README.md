@@ -122,6 +122,12 @@ poetry run pytest
 poetry build
 ```
 
+## Dependencies
+
+This project uses several open source packages including:
+- [typer](https://github.com/tiangolo/typer) (BSD-3-Clause) - Modern CLI framework
+- [rich](https://github.com/Textualize/rich) (MIT) - Beautiful terminal output
+
 ## License
 
 MIT License - see LICENSE file for details.
