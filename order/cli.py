@@ -1,4 +1,5 @@
 import os
+from types import LambdaType
 import typer
 from datetime import datetime
 from order.markdown_handler import MarkdownHandler
@@ -140,4 +141,16 @@ def search(query: str) -> None:
         typer.echo(result.content)
     else:
         typer.echo(result.error)
+        raise typer.Exit(1)
+
+@app.command()
+def carry(partial_text: str) -> None:
+    """Move a tasj to today with history trail"""
+    handler = get_handler()
+    result = handler.carry_task_forward(partial_text)
+
+    if result.success:
+        typer.echo(f"Task carried forward: {result.content}")
+    else:
+        typer.echo(f"Failed to carry task: {result.error}")
         raise typer.Exit(1)

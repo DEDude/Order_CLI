@@ -155,7 +155,7 @@ def test_today_command_shows_only_current_day():
 ### Notes
 - Today's note
 
-## 2025-10-26
+## 2025-10-27
 ### Todo
 - [ ] Future task
 """)
@@ -228,7 +228,6 @@ def test_delete_command_removes_task():
         os.chdir(temp_dir)
 
         try:
-            # Create file with tasks
             with open("dev-notes.md", "w") as f:
                 f.write("""# Dev Notes
 
@@ -244,7 +243,6 @@ def test_delete_command_removes_task():
             assert result.exit_code == 0
             assert "deleted" in result.stdout.lower()
             
-            # Verify task was removed
             with open("dev-notes.md", "r") as f:
                 content = f.read()
                 assert "Task to delete" not in content
@@ -256,12 +254,10 @@ def test_delete_command_removes_task():
 def test_smart_file_discovery_finds_existing_file():
     """Test that CLI finds existing dev-notes.md in parent directories"""
     with tempfile.TemporaryDirectory() as temp_dir:
-        # Create dev-notes.md in root
         root_notes = os.path.join(temp_dir, "dev-notes.md")
         with open(root_notes, "w") as f:
             f.write("# Dev Notes\n\n## 2025-10-24\n### Todo\n- [ ] Existing task\n")
         
-        # Create subdirectory and run command from there
         subdir = os.path.join(temp_dir, "src", "components")
         os.makedirs(subdir)
         
@@ -274,7 +270,6 @@ def test_smart_file_discovery_finds_existing_file():
             
             assert result.exit_code == 0
             
-            # Should have updated the root file, not created new one
             assert os.path.exists(root_notes)
             assert not os.path.exists(os.path.join(subdir, "dev-notes.md"))
             
@@ -302,7 +297,6 @@ def test_configuration_system_respects_custom_file_path():
 
             assert result.exit_code == 0
             
-            # Should create the custom file, not dev-notes.md
             assert os.path.exists(custom_notes)
             assert not os.path.exists("dev-notes.md")
             
@@ -322,14 +316,13 @@ def test_all_commands_work_with_new_user_subsection_format():
         os.chdir(temp_dir)
 
         try:
-            # Create file with new format structure
             new_format_content = """# Dev Notes
 
 ## Project Context
 
 *Add project-level context, goals, and background information here.*
 
-## 2025-10-25
+## 2025-10-26
 
 ### alice-feature-auth (@alice)
 #### Todo
@@ -353,34 +346,28 @@ def test_all_commands_work_with_new_user_subsection_format():
 
             runner = CliRunner()
             
-            # Test today command works with new format
             result = runner.invoke(app, ["today"])
             assert result.exit_code == 0
             assert "alice-feature-auth" in result.stdout
             assert "Fix login bug" in result.stdout
             assert "bob-main" in result.stdout
             
-            # Test search command works with new format
             result = runner.invoke(app, ["search", "login"])
             assert result.exit_code == 0
             assert "Fix login bug" in result.stdout
             
-            # Test done command works with new format
             result = runner.invoke(app, ["done", "login bug"])
             assert result.exit_code == 0
             assert "marked as complete" in result.stdout.lower()
             
-            # Verify task was actually marked complete
             with open("dev-notes.md", "r") as f:
                 content = f.read()
                 assert "- [x] Fix login bug" in content
             
-            # Test delete command works with new format
             result = runner.invoke(app, ["delete", "Review Alice"])
             assert result.exit_code == 0
             assert "deleted" in result.stdout.lower()
             
-            # Verify task was actually deleted
             with open("dev-notes.md", "r") as f:
                 content = f.read()
                 assert "Review Alice's PR" not in content
@@ -420,5 +407,38 @@ def test_get_today_function_returns_correct_format():
     expected = datetime.now().strftime("%Y-%m-%d")
     
     assert result == expected
-    assert len(result) == 10  # YYYY-MM-DD is 10 characters
-    assert result.count('-') == 2  # Should have exactly 2 dashes
+    assert len(result) == 10
+    assert result.count('-') == 2
+
+def test_carry_command_moves_task_with_history():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+
+        try:
+            with open("dev-notes.md", "w") as f:
+                f.write("""# Dev Notes
+
+## 2025-10-24
+
+### testuser (@testuser)
+#### Todo
+- [ ] Fix login bug
+- [ ] Another task
+""")
+
+            runner = CliRunner()
+            result = runner.invoke(app, ["carry", "Fix login"])
+
+            assert result.exit_code == 0
+            assert "Task carried forward" in result.stdout
+
+            with open("dev-notes.md", "r") as f:
+                    content = f.read()
+                    today = datetime.now().strftime("%Y-%m-%d")
+
+                    assert f"- [ ] Fix login bug (carried from 2025-10-24)" in content
+                    assert f"## {today}" in content
+
+        finally:
+            os.chdir(original_dir)

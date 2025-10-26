@@ -1,3 +1,4 @@
+from random import lognormvariate
 from typing import Optional
 import re
 import os
@@ -311,3 +312,49 @@ class MarkdownHandler:
         except (subprocess.SubprocessError, FileNotFoundError):
             pass
         return ""
+
+    def carry_task_forward(self, partial_text: str) -> MarkdownResult:
+        """Find task, move it to today with history trail"""
+        if not partial_text.strip():
+            return MarkdownResult(success=False, error="Search text cannot be empty")
+        
+        result = self.read_file()
+        if not result.success:
+            return result
+        
+        lines = result.content.split('\n')
+        task_found = None
+        task_date = None
+        
+        # Find the task and its date
+        current_date = None
+        for i, line in enumerate(lines):
+            if line.startswith("## ") and re.match(r'## \d{4}-\d{2}-\d{2}', line):
+                current_date = line.replace("## ", "")
+            elif TASK_INCOMPLETE in line and partial_text.lower() in line.lower():
+                task_found = line.strip()
+                task_date = current_date
+                lines.pop(i)
+                break
+        
+        if not task_found:
+            return MarkdownResult(success=False, error=f"No task found containing '{partial_text}'")
+        
+        # Write the modified content (with removed task) first
+        write_result = self._write_file_safely('\n'.join(lines))
+        if not write_result.success:
+            return write_result
+        
+        # Add to today with history
+        from datetime import datetime
+        today = datetime.now().strftime("%Y-%m-%d")
+        task_text = task_found.replace(TASK_INCOMPLETE, "").strip()
+        carried_task = f"{TASK_INCOMPLETE} {task_text} (carried from {task_date})"
+        
+        add_result = self.add_content_to_daily_section(today, "Todo", carried_task)
+        if add_result.success:
+            return MarkdownResult(success=True, content=carried_task)
+        
+        return add_result
+
+
