@@ -2,6 +2,8 @@ from typer.testing import CliRunner
 from order.cli import app
 import tempfile
 import os
+import stat
+import subprocess
 from datetime import datetime
 from unittest.mock import patch
 
@@ -439,6 +441,28 @@ def test_carry_command_moves_task_with_history():
 
                     assert f"- [ ] Fix login bug (carried from 2025-10-24)" in content
                     assert f"## {today}" in content
+
+        finally:
+            os.chdir(original_dir)
+
+def test_install_hooks_command_creates_git_hooks():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+
+        try:
+            subprocess.run(["git", "init"], capture_output=True)
+
+            runner = CliRunner()
+            result = runner.invoke(app, ["install-hooks"])
+
+            assert result.exit_code == 0
+            assert "Git hooks installed successfully" in result.stdout
+
+            # Check that pre-commit hook was created
+            hook_path = ".git/hooks/pre-commit"
+            assert os.path.exists(hook_path)
+            assert os.stat(hook_path).st_mode & stat.S_IEXEC
 
         finally:
             os.chdir(original_dir)

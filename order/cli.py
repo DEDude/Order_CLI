@@ -107,8 +107,6 @@ def delete(task_id: str) -> None:
     
     handle_result(result, f"Task containing '{task_id}' deleted", "Failed to delete task")
 
-
-
 @app.command()
 def done(partial_text: str) -> None:
     """Mark a task as complete by partial text match"""
@@ -147,3 +145,12 @@ def carry(partial_text: str) -> None:
     result = handler.carry_task_forward(partial_text)
 
     handle_result(result, f"Task carried forward: {result.content}", "Failed to carry task")
+
+@app.command()
+def install_hooks() -> None:
+    """Install git hooks for automatic dev-notes.md integration"""
+    handler = get_handler()
+    result = handler.install_git_hooks()
+
+    handle_result(result, "Git hooks installed successfully", "Failed to install git hooks")
+

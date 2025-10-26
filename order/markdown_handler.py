@@ -361,4 +361,35 @@ class MarkdownHandler:
         
         return add_result
 
-
+    def install_git_hooks(self) -> MarkdownResult:
+        """Install git hooks for automatic dev-notes.md staging"""
+        try:
+            # Check if we're in a git repo
+            git_dir = ".git"
+            if not os.path.exists(git_dir):
+                return MarkdownResult(success=False, error="Not in a git repository")
+            
+            # Create hooks directory if it doesn't exist
+            hooks_dir = os.path.join(git_dir, "hooks")
+            os.makedirs(hooks_dir, exist_ok=True)
+            
+            # Create pre-commit hook
+            hook_path = os.path.join(hooks_dir, "pre-commit")
+            hook_content = """#!/bin/sh
+# Auto-stage dev-notes.md if it exists
+if [ -f "dev-notes.md" ]; then
+    git add dev-notes.md
+fi
+"""
+            
+            with open(hook_path, 'w') as f:
+                f.write(hook_content)
+            
+            # Make hook executable
+            import stat
+            os.chmod(hook_path, os.stat(hook_path).st_mode | stat.S_IEXEC)
+            
+            return MarkdownResult(success=True)
+            
+        except Exception as e:
+            return MarkdownResult(success=False, error=str(e))
