@@ -3,6 +3,7 @@ import re
 import os
 import subprocess
 import getpass
+import stat
 from datetime import datetime
 
 TASK_INCOMPLETE = "- [ ]"
@@ -20,6 +21,15 @@ class MarkdownResult:
 class MarkdownHandler:
     def __init__(self, file_path: str) -> None:
         self.file_path = file_path
+        self._cached_content: Optional[str] = None
+        self._cache_valid = False
+        self._cached_branch: Optional[str] = None
+        self._cached_username: Optional[str] = None
+
+    def _invalidate_cache(self) -> None:
+        """Invalidate cache after file modifications"""
+        self._cache_valid = False
+        self._cached_content = None
 
     def _validate_date_format(self, date: str) -> MarkdownResult:
         """Validate date format and return error if invalid"""
@@ -40,6 +50,7 @@ class MarkdownHandler:
         try:
             with open(self.file_path, 'w') as f:
                 f.write(content)
+            self._invalidate_cache()  # Invalidate cache after write
             return MarkdownResult(success=True)
         except PermissionError:
             return MarkdownResult(success=False, error="Permission denied")
@@ -58,7 +69,7 @@ class MarkdownHandler:
 *Add project-level context, goals, and background information here.*
 
 """)
-
+            self._invalidate_cache()  # Invalidate cache after write
             return MarkdownResult(success=True)
         except PermissionError:
             return MarkdownResult(success=False, error="Permission denied")
@@ -68,9 +79,18 @@ class MarkdownHandler:
             return MarkdownResult(success=False, error=f"Unexpected error: {str(e)}")
 
     def read_file(self) -> MarkdownResult:
+        """Read file with caching"""
+        if self._cache_valid and self._cached_content is not None:
+            return MarkdownResult(success=True, content=self._cached_content)
+        
         try:
             with open(self.file_path, 'r') as f:
                 content = f.read()
+            
+            # Cache the content
+            self._cached_content = content
+            self._cache_valid = True
+            
             return MarkdownResult(success=True, content=content)
         except FileNotFoundError:
             return MarkdownResult(success=False, error="File not found")
@@ -141,8 +161,12 @@ class MarkdownHandler:
         return self._write_file_safely('\n'.join(lines))
 
     def get_username(self) -> str:
-        """Get current username for attribute section"""
-        return getpass.getuser()
+        """Get current username for attribute section with caching"""
+        if self._cached_username is not None:
+            return self._cached_username
+        
+        self._cached_username = getpass.getuser()
+        return self._cached_username
 
     def _create_new_date_section(self, date: str, section_type: str, content: str, branch_override: str = None) -> MarkdownResult:
         """Create a new date section with user-specific subsection"""
@@ -300,16 +324,22 @@ class MarkdownHandler:
         return self._write_file_safely('\n'.join(new_lines))
 
     def get_current_branch(self) -> str:
-        """Get current git branch name, return empty string if not in git repo"""
+        """Get current git branch name with caching"""
+        if self._cached_branch is not None:
+            return self._cached_branch
+        
         try:
             result = subprocess.run(['git', 'branch', '--show-current'],
                                         capture_output=True, text=True, cwd=os.path.dirname(self.file_path))
 
             if result.returncode == 0:
-                    return result.stdout.strip()
+                self._cached_branch = result.stdout.strip()
+                return self._cached_branch
         
         except (subprocess.SubprocessError, FileNotFoundError):
             pass
+        
+        self._cached_branch = ""
         return ""
 
     def _find_task_in_content(self, lines: list, partial_text: str) -> tuple:
@@ -386,7 +416,6 @@ fi
                 f.write(hook_content)
             
             # Make hook executable
-            import stat
             os.chmod(hook_path, os.stat(hook_path).st_mode | stat.S_IEXEC)
             
             return MarkdownResult(success=True)

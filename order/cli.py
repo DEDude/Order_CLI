@@ -38,11 +38,7 @@ def _add_content_with_feedback(section_type: str, content: str, content_type: st
     today = get_today()
     result = handler.add_content_to_daily_section(today, section_type, content, branch)
     
-    if result.success:
-        typer.echo(f"{content_type} added: {content}")
-    else:
-        typer.echo(f"Error: Failed to add content - {result.error}")
-        raise typer.Exit(1)
+    handle_result(result, f"{content_type} added: {content}", "Failed to add content")
 
 def get_handler() -> MarkdownHandler:
     """Get a MarkdownHandler instance, creating file if needed"""
@@ -97,7 +93,8 @@ def list() -> None:
     if result.success:
         typer.echo(result.content)
     else:
-        handle_result(result, "", "Failed to read file")
+        typer.echo(f"Error: Failed to read file - {result.error}")
+        raise typer.Exit(1)
 
 @app.command()
 def delete(task_id: str) -> None:
@@ -125,7 +122,8 @@ def today() -> None:
     if result.success:
         typer.echo(result.content)
     else:
-        handle_result(result, "", "Failed to read today's section")
+        typer.echo(f"Error: Failed to read today's section - {result.error}")
+        raise typer.Exit(1)
 
 @app.command()
 def search(query: str) -> None:
@@ -136,7 +134,8 @@ def search(query: str) -> None:
     if result.success:
         typer.echo(result.content)
     else:
-        handle_result(result, "", "Search failed")
+        typer.echo(f"Error: Search failed - {result.error}")
+        raise typer.Exit(1)
 
 @app.command()
 def carry(partial_text: str) -> None:
