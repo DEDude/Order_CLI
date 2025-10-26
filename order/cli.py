@@ -1,5 +1,4 @@
 import os
-from types import LambdaType
 import typer
 from datetime import datetime
 from order.markdown_handler import MarkdownHandler

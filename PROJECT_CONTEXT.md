@@ -421,6 +421,24 @@ if user and user.email:
    - ✅ Format: `- [ ] Fix bug (carried from 2025-10-23)` for history preservation
    - ✅ All tests passing (36/36)
 
+### Phase 7.5: Post-Phase 7 Technical Debt Cleanup
+
+#### High Priority Tasks (4/4 🚧):
+1. **✅ COMPLETED Task 1** - Remove unused imports - Cleaned up `LambdaType` and `lognormvariate` imports
+2. **Fix typo in carry command** - "tasj" → "task" in docstring
+3. **Move imports to module level** - Consolidate `getpass` and `datetime` imports
+4. **Standardize error message formatting** - Consistent CLI error patterns
+
+#### Medium Priority Tasks (3/3 📋):
+5. **Extract carry_task_forward() complexity** - Split into smaller, testable methods
+6. **Add input validation constants** - Centralize validation logic
+7. **Consolidate duplicate error handling** - Reduce CLI command duplication
+
+#### Low Priority Tasks (3/3 📋):
+8. **Add comprehensive docstrings** - Improve code documentation
+9. **Consider dependency injection** - Better MarkdownHandler instantiation
+10. **Add configuration class** - Centralize constants and settings
+
 ### Phase 8: Git Integration & Automation
 32. **Git hooks integration** - Automated workflow integration
     - Add `order install-hooks` - Set up git hooks in `.git/hooks/`
@@ -709,9 +727,9 @@ All technical debt addressed:
 - ✅ Reduced codebase by ~40 lines while maintaining all functionality
 
 ### 🚧 Currently Working On
-- **Phase 8**: Git Integration & Automation - Ready to begin git hooks integration
-- **Current Task**: Task 32 - Git hooks integration (install-hooks command, commit summaries)
-- Next: Task 33 - Global CLI installation and packaging
+- **Phase 7.5**: Post-Phase 7 Technical Debt Cleanup - Address code quality issues after carry command implementation
+- **Current Task**: Task 2 - Fix typo in carry command docstring ("tasj" → "task")
+- Next: Task 3 - Move imports to module level
 
 ### Phase 7: Task Lifecycle Management - COMPLETE ✅
 
@@ -733,6 +751,7 @@ All 2 steps completed:
 - **Phase 5.5**: COMPLETE ✅ (4/4 steps done) - Code Quality & Technical Debt Cleanup
 - **Phase 6**: COMPLETE ✅ (6/6 steps done) - Collaboration-Friendly Format
 - **Phase 7**: COMPLETE ✅ (1/1 steps done) - Task Lifecycle Management (carry command)
+- **Phase 7.5**: PENDING 📋 (1/10 steps done) - Post-Phase 7 Technical Debt Cleanup
 - **Phase 8**: PENDING 📋 (0/1 steps done) - Git Integration & Automation
 - **Phase 9**: PENDING 📋 (0/2 steps done) - Packaging & Distribution
 
