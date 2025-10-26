@@ -373,7 +373,7 @@ def test_all_commands_work_with_new_user_subsection_format():
             with open("dev-notes.md", "r") as f:
                 content = f.read()
                 assert "Review Alice's PR" not in content
-                assert "Deploy to staging" in content  # Other task should remain
+                assert "Deploy to staging" in content
 
         finally:
             os.chdir(original_dir)
@@ -459,10 +459,62 @@ def test_install_hooks_command_creates_git_hooks():
             assert result.exit_code == 0
             assert "Git hooks installed successfully" in result.stdout
 
-            # Check that pre-commit hook was created
             hook_path = ".git/hooks/pre-commit"
             assert os.path.exists(hook_path)
             assert os.stat(hook_path).st_mode & stat.S_IEXEC
 
+        finally:
+            os.chdir(original_dir)
+
+def test_context_command_adds_project_context_fixed():
+    """Test context command adds content to project context section"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+        
+        try:
+            with open("dev-notes.md", 'w') as f:
+                f.write("""# Dev Notes
+
+## Project Context
+
+*Add project-level context, goals, and background information here.*
+
+""")
+            
+            runner = CliRunner()
+            result = runner.invoke(app, ["context", "Working on user authentication system"])
+            
+            assert result.exit_code == 0
+            assert "Context added: Working on user authentication system" in result.stdout
+            
+            with open("dev-notes.md", 'r') as f:
+                content = f.read()
+                assert "Working on user authentication system" in content
+                assert "## Project Context" in content
+        finally:
+            os.chdir(original_dir)
+
+def test_context_show_command_displays_current_context_fixed():
+    """Test context show command displays current project context"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+        
+        try:
+            with open("dev-notes.md", 'w') as f:
+                f.write("""# Dev Notes
+
+## Project Context
+
+Working on user authentication system
+
+""")
+            
+            runner = CliRunner()
+            result = runner.invoke(app, ["context", "show"])
+            
+            assert result.exit_code == 0
+            assert "Working on user authentication system" in result.stdout
         finally:
             os.chdir(original_dir)

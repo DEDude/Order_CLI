@@ -417,3 +417,64 @@ fi
             
         except Exception as e:
             return MarkdownResult(success=False, error=str(e))
+
+    def get_project_context(self) -> MarkdownResult:
+        """Get the current project context section"""
+        read_result = self.read_file()
+        if not read_result.success:
+            return read_result
+
+        lines = read_result.content.split('\n')
+        context_lines = []
+        in_context = False
+        
+        for line in lines:
+            if line.strip() == "## Project Context":
+                in_context = True
+                continue
+            elif line.startswith("## ") and in_context:
+                break
+            elif in_context:
+                context_lines.append(line)
+
+        context_content = '\n'.join(context_lines).strip()
+        
+        if not context_content:
+            return MarkdownResult(success=True, content="No project context set. Use 'order context \"your context\"' to add.")
+        
+        return MarkdownResult(success=True, content=context_content)
+
+    def add_project_context(self, content: str) -> MarkdownResult:
+        """Add content to the project context section"""
+        read_result = self.read_file()
+        
+        if not read_result.success:
+            return read_result
+
+        lines = read_result.content.split('\n')
+        new_lines = []
+        context_found = False
+        skip_placeholder = False
+
+        for i, line in enumerate(lines):
+            if line.strip() == "## Project Context":
+                context_found = True
+                new_lines.append(line)
+                new_lines.append("")
+                new_lines.append(content)
+                new_lines.append("")
+
+                if i + 1 < len(lines) and i + 2 < len(lines) and "Add project-level context" in lines [i + 2]:
+                    skip_placeholder = True
+                elif i + 1 < len(lines) and "Add project-level context" in lines[i + 1]:
+                    skip_placeholder = True
+                elif skip_placeholder and "*Add project-level context" in line:
+                    skip_placeholder = False
+                    continue
+                else:
+                    new_lines.append(line)
+
+        if not context_found:
+            return MarkdownResult(success=False, error="Project Context section not found")
+
+        return self._write_file_safely('\n'.join(new_lines))

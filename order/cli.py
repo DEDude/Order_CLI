@@ -176,3 +176,21 @@ def install_hooks() -> None:
 
     handle_result(result, "Git hooks installed successfully", "Failed to install git hooks")
 
+@app.command()
+def context(content: str = typer.Argument(None, help="Context to add. Use 'show' to view current context.")) -> None:
+    """Add or view project context information"""
+    if content == "show" or content is None:
+        handler = get_handler()
+        result = handler.get_project_context()
+
+        if result.success:
+            typer.echo(result.content)
+        else:
+            typer.echo(f"Error: Failed to read context - {result.error}")
+            raise typer.Exit(1)
+
+    else:
+        _validate_content(content, "Context")
+        handler = get_handler()
+        result = handler.add_project_context(content)
+        handle_result(result, f"Context added: {content}", "Failed to add context")

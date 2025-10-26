@@ -841,6 +841,66 @@ All 2 steps completed:
 
 ### 🏆 ALL PHASES COMPLETE! 🏆
 
+## New Feature Tasks - Identified 2025-10-26
+
+### ✅ COMPLETED: Context Command Implementation (2025-10-26)
+**Status**: COMPLETE ✅ - Implemented using TDD approach
+
+**Implementation Details**:
+- **CLI Command**: Added `context` command to `order/cli.py`
+  - `order context "text"` - Add project context
+  - `order context show` - View current context
+  - `order context` (no args) - Same as show
+- **Handler Methods**: Added to `order/markdown_handler.py`
+  - `get_project_context()` - Retrieves current context from Project Context section
+  - `add_project_context()` - Adds/updates context, replaces placeholder text
+- **Tests**: Added comprehensive test coverage
+  - `test_context_command_adds_project_context_fixed()` - Tests adding context
+  - `test_context_show_command_displays_current_context_fixed()` - Tests viewing context
+- **Integration**: Follows existing patterns (validation, error handling, MarkdownResult)
+
+**TDD Process Followed**:
+1. **Red**: Wrote failing tests (command not found)
+2. **Green**: Implemented minimal CLI command and handler methods
+3. **Refactor**: Fixed bugs (syntax errors, method names, parsing logic)
+4. **Result**: All 39 tests passing ✅
+
+### 🚧 REMAINING TASKS
+
+#### High Priority
+2. **Improve user experience** - Better help text and command examples needed
+   - Current commands lack detailed usage examples
+   - Users need better guidance on syntax and available options
+   - Command descriptions are too brief
+
+3. **Add comprehensive help system** - Create dedicated help command
+   - Command: `order help` with detailed usage guide
+   - Include examples for all commands
+   - Show tips and best practices
+   - Explain file structure and collaboration features
+
+#### Medium Priority
+4. **Add task backlog feature** - Support for non-date-specific tasks
+   - Backlog section for tasks not tied to specific dates
+   - Commands to manage backlog items
+   - Ability to move tasks between backlog and daily sections
+
+### Implementation Status Summary
+- **✅ Context command**: COMPLETE - Core missing functionality implemented
+- **🚧 Help system improvements**: PENDING - Critical for user experience
+- **📋 Backlog feature**: PENDING - Workflow enhancement
+
+### Next Session Goals
+1. **Implement help system improvements** - Better UX and command guidance
+2. **Add comprehensive help command** - Detailed usage examples and tips
+3. **Consider backlog feature implementation** - If time permits
+
+### Technical Notes
+- All existing functionality preserved (39/39 tests passing)
+- Context command integrates seamlessly with existing markdown structure
+- Follows established patterns for validation, error handling, and file operations
+- Ready for next feature implementation
+
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
 #### High Priority Tasks (3/3 ✅):
