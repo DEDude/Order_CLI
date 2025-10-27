@@ -478,3 +478,66 @@ fi
             return MarkdownResult(success=False, error="Project Context section not found")
 
         return self._write_file_safely('\n'.join(new_lines))
+
+    def add_backlog_task(self, task: str) -> MarkdownResult:
+        """Add a task to the backlog section"""
+        if not task.strip():
+            return MarkdownResult(success=False, error="Task can not be empty")
+
+        result = self.read_file()
+        if not result.success:
+            return result
+
+        lines = result.content.split('\n')
+        backlog_task = f"- [ ] {task}"
+        backlog_exists = any(line.strip() == "## Backlog" for line in lines)
+
+        if backlog_exists:
+            return self._add_to_existing_backlog(lines, backlog_task)
+        else:
+            return self._create_backlog_section(lines, backlog_task)
+
+    def _create_backlog_section(self, lines:list, task: str) -> MarkdownResult:
+        """Create new backlog section after Project Context"""
+        insert_index = len(lines)
+
+        for i, line in enumerate(lines):
+            if line.strip() == "## Project Context":
+
+                for j in range(i + 1, len(lines)):
+                    if lines[j].startswith("## ") and lines[j].strip() != "## Project Context":
+
+                        insert_index = j
+                    break
+
+                else:
+                    insert_index = len(lines)
+                break
+        
+        new_lines = lines[:insert_index] + [
+                                "",
+                                "## Backlog",
+                                "",
+                                task,
+                                ""
+                            ] + lines[insert_index:]
+
+        return self._write_file_safely('\n'.join(new_lines))
+
+    def _add_to_existing_backlog(self, lines: list, task: str) -> MarkdownResult:
+        """Add task to existing backlog section"""
+        for i, line in enumerate(lines):
+            if line.strip() == "## Backlog":
+
+                insert_index = len(lines)
+                for j in range(i + 1, len(lines)):
+                    if lines[j].startswith("## "):
+
+                        insert_index = j
+                        break
+
+                    lines.insert(insert_index, task)
+                    break
+
+                return self._write_file_safely('\n'.join(lines))
+

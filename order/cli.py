@@ -194,3 +194,66 @@ def context(content: str = typer.Argument(None, help="Context to add. Use 'show'
         handler = get_handler()
         result = handler.add_project_context(content)
         handle_result(result, f"Context added: {content}", "Failed to add context")
+
+@app.command()
+def help() -> None:
+    """Show comprehensive usage guide with examples and tips"""
+    help_text = """Order CLI - Developer Notes & Task Management
+
+A terminal-based productivity tool for developers to manage daily 
+tasks, notes, and ideas in a git-friendly markdown format.
+
+Quick Start Examples:
+# Add task to today's todo list
+- order add "Fix login bug"
+
+# Add contextual note
+- order note "Left off debugging OAuth"
+
+# Capture feature idea
+- order idea "Consider caching"
+
+# Mark task as complete (partial match)
+- order done "login"
+
+# Show today's task list
+- order today
+
+# Show all content
+- order list
+
+Task Management:
+# Move task to today with history
+- order carry "old task"
+
+# Remove task entirely
+- order delete "redundant task"
+
+# Find content across dates
+- order search "keyword"
+
+Git Integration:
+# Auto-commit dev notes with code
+- order install-hooks
+
+# Add project-level information
+- order context "Project background"
+
+Team Collaboration:
+# Override branch detection
+- order add "task" --branch feature
+
+File Location: dev-notes.md (created automatically)
+Structure: Daily sections with user subsections for team collaboration
+"""
+    typer.echo(help_text.strip())
+
+@app.command()
+def backlog(task: str) -> None:
+    """Add a task to the backlog (non-date-specific)"""
+    _validate_content(task, "Backlog task")
+
+    handler = get_handler()
+    result = handler.add_backlog_task(task)
+
+    handle_result(result, f"Backlog task added: {task}", "Failed to add backlog task")

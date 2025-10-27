@@ -157,7 +157,7 @@ def test_today_command_shows_only_current_day():
 ### Notes
 - Today's note
 
-## 2025-10-27
+## 2025-10-28
 ### Todo
 - [ ] Future task
 """)
@@ -324,7 +324,7 @@ def test_all_commands_work_with_new_user_subsection_format():
 
 *Add project-level context, goals, and background information here.*
 
-## 2025-10-26
+## 2025-10-27
 
 ### alice-feature-auth (@alice)
 #### Todo
@@ -516,5 +516,48 @@ Working on user authentication system
             
             assert result.exit_code == 0
             assert "Working on user authentication system" in result.stdout
+        finally:
+            os.chdir(original_dir)
+
+def test_help_command_shows_comprehensive_usage():
+    """Test that help command shows detailed usage examples"""
+    runner = CliRunner()
+    result = runner.invoke(app, ["help"])
+    
+    assert result.exit_code == 0
+    assert "Order CLI - Developer Notes & Task Management" in result.stdout
+    assert "Quick Start Examples:" in result.stdout
+    assert "order add" in result.stdout
+    assert "order note" in result.stdout
+    assert "order done" in result.stdout
+    assert "Git Integration:" in result.stdout
+    assert "Team Collaboration:" in result.stdout
+
+def test_backlog_command_adds_task_to_backlog():
+    """Test that backlog command adds tasks to backlog section"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+
+        try:
+            runner = CliRunner()
+            result = runner.invoke(app, ["backlog", "Research new framework"])
+
+            assert result.exit_code == 0
+            assert "Backlog task added" in result.stdout
+
+            with open("dev-notes.md", "r") as f:
+                    content = f.read()
+
+                    assert "## Backlog" in content
+                    assert "- [ ] Research new framework" in content
+
+                    lines = content.split('\n')
+
+                    project_context_idx = next(i for i, line in enumerate(lines) if line.strip() == "## Project Context")
+                    backlog_idx = next(i for i, line in enumerate(lines) if line.strip() == "## Backlog")
+                    
+                    assert backlog_idx > project_context_idx  # Backlog comes after Project Context
+
         finally:
             os.chdir(original_dir)

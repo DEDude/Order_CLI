@@ -487,6 +487,19 @@ if user and user.email:
     - Add task age indicators `[Day 3]` for tasks older than 1 day
     - Add `order aging` command to show tasks by age (1 day, 3 days, 1 week+)
 
+### Phase 10.5: CLI Robustness & Manual Edit Resilience
+34.5. **Enhanced format detection** - Make CLI commands resilient to manual edits:
+    - **Flexible date parsing** - Support multiple date formats (`## 2025-10-27`, `## October 27, 2025`, `## Oct 27`)
+    - **Smart task detection** - Recognize various task formats (`- [ ]`, `* [ ]`, `• [ ]`, `1. [ ]`)
+    - **Fuzzy section matching** - Find sections with case-insensitive, partial matching (`todo`, `Todo`, `TODO`, `Tasks`)
+    - **Structure auto-repair** - Automatically fix malformed sections when adding content
+    - **Graceful degradation** - Commands work even with completely freeform markdown
+    - **Format normalization** - Option to standardize format: `order normalize` command
+    - **Validation warnings** - Detect and warn about non-standard formats without breaking
+    - **Backup integration** - Auto-backup before structural changes
+    - **Recovery mode** - `order repair` command to fix corrupted structure
+    - **Alternative parsers** - Fallback parsing strategies for edge cases
+
 ### Phase 11: Performance & Scalability
 35. **File performance optimization** - Handle large dev-notes.md files efficiently
     - Implement lazy loading for large files (only read relevant sections)
@@ -865,41 +878,96 @@ All 2 steps completed:
 3. **Refactor**: Fixed bugs (syntax errors, method names, parsing logic)
 4. **Result**: All 39 tests passing ✅
 
-### 🚧 REMAINING TASKS
+### ✅ COMPLETED: Backlog Feature - Basic Implementation (2025-10-27)
+**Status**: PARTIAL COMPLETE ✅ - Basic backlog command implemented using TDD approach
+
+**Implementation Details**:
+- **CLI Command**: Added `backlog` command to `order/cli.py`
+  - `order backlog "Research new framework"` - Add task to backlog section
+  - Validates content and provides error feedback
+- **Handler Methods**: Added to `order/markdown_handler.py`
+  - `add_backlog_task()` - Adds tasks to backlog section
+  - `_create_backlog_section()` - Creates new backlog section after Project Context
+  - `_add_to_existing_backlog()` - Adds to existing backlog section
+- **Tests**: Added comprehensive test coverage
+  - `test_backlog_command_adds_task_to_backlog()` - Tests backlog command functionality
+  - Verifies proper structure ordering (Project Context → Backlog → Daily sections)
+- **Integration**: Follows existing patterns (validation, error handling, MarkdownResult)
+
+**TDD Process Followed**:
+1. **Red**: Wrote failing test for backlog command
+2. **Green**: Implemented minimal CLI command and handler methods
+3. **Refactor**: Fixed syntax errors, indentation issues, test logic
+4. **Result**: All 41 tests passing ✅
+
+**File Structure Created**:
+```markdown
+# Dev Notes
+
+## Project Context
+*Add project-level context, goals, and background information here.*
+
+## Backlog
+- [ ] Research new framework
+
+## 2025-10-27
+### username-branch (@username)
+#### Todo
+- [ ] Daily tasks here
+```
+
+### 🚧 REMAINING BACKLOG TASKS
 
 #### High Priority
-2. **Improve user experience** - Better help text and command examples needed
-   - Current commands lack detailed usage examples
-   - Users need better guidance on syntax and available options
-   - Command descriptions are too brief
+✅ 2. **Improve user experience** - COMPLETED - Better help text and command examples
+✅ 3. **Add comprehensive help system** - COMPLETED - Dedicated help command implemented
 
-3. **Add comprehensive help system** - Create dedicated help command
-   - Command: `order help` with detailed usage guide
-   - Include examples for all commands
-   - Show tips and best practices
-   - Explain file structure and collaboration features
+2.5. **Smart error detection and syntax correction** - Intelligent command feedback
+   - Detect common syntax errors: `order add new task` → suggest `order add "new task"`
+   - Missing quotes detection for multi-word arguments
+   - Typo detection: `order ad "task"` → suggest `order add "task"`
+   - Invalid command suggestions: `order create` → suggest `order add`
+   - Context-aware help: Show relevant examples when commands fail
+   - Fuzzy matching for command names and common mistakes
+   - Educational feedback: Explain why the command failed and how to fix it
 
 #### Medium Priority
 4. **Add task backlog feature** - Support for non-date-specific tasks
-   - Backlog section for tasks not tied to specific dates
-   - Commands to manage backlog items
-   - Ability to move tasks between backlog and daily sections
+   - ✅ **Basic backlog command**: `order backlog "task"` - COMPLETED (41/41 tests passing)
+   - 📋 **List backlog tasks**: `order backlog list` - Show all backlog items
+   - 📋 **Move to daily**: `order promote "backlog task"` - Move backlog task to today
+   - 📋 **Backlog management**: `order backlog done "task"` - Mark backlog tasks complete
+   - 📋 **Backlog search**: `order backlog search "query"` - Find items in backlog
+
+**Current Structure**:
+```markdown
+# Dev Notes
+## Project Context
+*project info*
+## Backlog
+- [ ] Non-date-specific tasks here
+## 2025-10-27
+### username-branch (@username)
+#### Todo
+- [ ] Daily tasks here
+```
 
 ### Implementation Status Summary
 - **✅ Context command**: COMPLETE - Core missing functionality implemented
-- **🚧 Help system improvements**: PENDING - Critical for user experience
-- **📋 Backlog feature**: PENDING - Workflow enhancement
+- **✅ Help system improvements**: COMPLETE - Comprehensive help command implemented
+- **🚧 Smart error detection**: PENDING - Intelligent syntax correction and feedback
+- **🚧 Backlog feature**: IN PROGRESS - Basic backlog command implemented (1/4 features complete)
 
 ### Next Session Goals
-1. **Implement help system improvements** - Better UX and command guidance
-2. **Add comprehensive help command** - Detailed usage examples and tips
-3. **Consider backlog feature implementation** - If time permits
+1. **Complete backlog feature** - Add list, promote, done, search commands for backlog management
+2. **Implement smart error detection** - Intelligent syntax correction and command suggestions
+3. **Consider CLI robustness improvements** - Enhanced format detection and manual edit resilience
 
 ### Technical Notes
-- All existing functionality preserved (39/39 tests passing)
-- Context command integrates seamlessly with existing markdown structure
+- All existing functionality preserved (41/41 tests passing)
+- Backlog command integrates seamlessly with existing markdown structure
 - Follows established patterns for validation, error handling, and file operations
-- Ready for next feature implementation
+- Ready for additional backlog feature implementation
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 
@@ -938,3 +1006,75 @@ All 2 steps completed:
 1. **Phase 4**: Polish & Testing - Begin final improvements and comprehensive testing
 2. **Phase 5**: Global installation & smart file discovery
 3. **Future**: Neovim plugin integration and advanced features
+
+## Smart Error Detection Implementation Plan
+
+### Architecture: Hybrid Error Detection System
+
+#### Core Components
+1. **ErrorDetector Class** - Central error detection and suggestion engine
+2. **Dictionary-based lookups** - Fast typo correction for common mistakes
+3. **Regex patterns** - Complex syntax error detection
+4. **Context-aware help** - Educational feedback with examples
+
+#### Implementation Strategy
+```python
+class ErrorDetector:
+    def __init__(self):
+        self.command_suggestions = {
+            "ad": "add", "not": "note", "notes": "note",
+            "create": "add", "new": "add", "finish": "done",
+            "complete": "done", "del": "delete", "remove": "delete"
+        }
+        
+        self.context_help = {
+            "add": {"example": 'order add "Fix login bug"', 
+                   "tip": "Task descriptions with spaces need quotes"},
+            "note": {"example": 'order note "Left off debugging OAuth"',
+                    "tip": "Notes help track context between sessions"}
+        }
+        
+        self.patterns = {
+            "missing_quotes": r"^order (add|note|idea) \w+ \w+",
+            "invalid_command": r"^order (\w+)"
+        }
+    
+    def detect_and_suggest(self, raw_command: str) -> Optional[str]:
+        # Layer 1: Regex for syntax patterns
+        if suggestion := self._check_syntax_patterns(raw_command):
+            return suggestion
+        
+        # Layer 2: Dictionary for command typos  
+        if suggestion := self._check_command_typos(raw_command):
+            return suggestion
+            
+        # Layer 3: Context-aware help
+        if help_text := self._get_context_help(raw_command):
+            return help_text
+            
+        return None
+```
+
+#### Detection Priority Order
+1. **Regex patterns** - Catch complex syntax errors first (missing quotes, malformed commands)
+2. **Dictionary lookups** - Fast typo correction for command names
+3. **Context help** - Educational feedback with examples and tips
+
+#### Error Types Handled
+- **Missing quotes**: `order add new task` → `order add "new task"`
+- **Command typos**: `order ad "task"` → `order add "task"`
+- **Invalid commands**: `order create "task"` → `order add "task"`
+- **Context-aware help**: Show relevant examples when commands fail
+- **Educational feedback**: Explain why commands failed and how to fix them
+
+#### Integration Points
+- Hook into Typer's error handling system
+- Intercept unknown command errors
+- Provide suggestions before CLI exits
+- Maintain existing error handling patterns
+
+#### TDD Implementation Approach
+1. **Red**: Write failing tests for each error type
+2. **Green**: Implement minimal ErrorDetector functionality
+3. **Refactor**: Optimize and extend detection capabilities
+4. **Integration**: Hook into existing CLI error handling
