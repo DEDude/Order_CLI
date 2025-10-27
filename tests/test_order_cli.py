@@ -561,3 +561,30 @@ def test_backlog_command_adds_task_to_backlog():
 
         finally:
             os.chdir(original_dir)
+
+def test_promote_command_moves_task_from_backlog_to_today():
+    """Test that promote command moves tasks from backlog to today's section"""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        original_dir = os.getcwd()
+        os.chdir(temp_dir)
+
+        try:
+            runner = CliRunner()
+            runner.invoke(app, ["backlog", "Research new framework"])
+
+            result = runner.invoke(app, ["promote", "Research"])
+
+            assert result.exit_code == 0
+            assert "Task promoted" in result.stdout
+
+            with open("dev-notes.md", "r") as f:
+                    content = f.read()
+            
+                    assert "- [ ] Research new framework (promoted from backlog)" in content
+
+                    backlog_section = content.split("## Backlog")[1].split("##")[0]
+
+                    assert "Research new framework" not in backlog_section
+
+        finally:
+            os.chdir(original_dir)

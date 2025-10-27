@@ -257,3 +257,13 @@ def backlog(task: str) -> None:
     result = handler.add_backlog_task(task)
 
     handle_result(result, f"Backlog task added: {task}", "Failed to add backlog task")
+
+@app.command()
+def promote(partial_text: str) -> None:
+    """Move a task from backlog to today's todo list"""
+    _validate_content(partial_text, "Task text")
+    
+    handler = get_handler()
+    result = handler.promote_backlog_task(partial_text)
+    
+    handle_result(result, f"Task promoted: {result.content}", "Failed to promote task")

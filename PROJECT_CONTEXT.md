@@ -879,26 +879,39 @@ All 2 steps completed:
 4. **Result**: All 39 tests passing ✅
 
 ### ✅ COMPLETED: Backlog Feature - Basic Implementation (2025-10-27)
-**Status**: PARTIAL COMPLETE ✅ - Basic backlog command implemented using TDD approach
+**Status**: PARTIAL COMPLETE ✅ - Basic backlog and promote commands implemented using TDD approach
 
 **Implementation Details**:
-- **CLI Command**: Added `backlog` command to `order/cli.py`
+- **CLI Commands**: Added to `order/cli.py`
   - `order backlog "Research new framework"` - Add task to backlog section
-  - Validates content and provides error feedback
+  - `order promote "Research"` - Move backlog task to today with history trail
+  - Both commands validate content and provide error feedback
 - **Handler Methods**: Added to `order/markdown_handler.py`
   - `add_backlog_task()` - Adds tasks to backlog section
+  - `promote_backlog_task()` - Moves tasks from backlog to today's Todo section
   - `_create_backlog_section()` - Creates new backlog section after Project Context
   - `_add_to_existing_backlog()` - Adds to existing backlog section
+  - `_find_backlog_task()` - Locates tasks in backlog for promotion
 - **Tests**: Added comprehensive test coverage
   - `test_backlog_command_adds_task_to_backlog()` - Tests backlog command functionality
-  - Verifies proper structure ordering (Project Context → Backlog → Daily sections)
+  - `test_promote_command_moves_task_from_backlog_to_today()` - Tests promote command functionality
+  - Verifies proper structure ordering and task movement with history preservation
 - **Integration**: Follows existing patterns (validation, error handling, MarkdownResult)
 
 **TDD Process Followed**:
-1. **Red**: Wrote failing test for backlog command
-2. **Green**: Implemented minimal CLI command and handler methods
+1. **Red**: Wrote failing tests for backlog and promote commands
+2. **Green**: Implemented minimal CLI commands and handler methods
 3. **Refactor**: Fixed syntax errors, indentation issues, test logic
-4. **Result**: All 41 tests passing ✅
+4. **Result**: All 42 tests passing ✅
+
+**Task Flow Implemented**:
+```
+Backlog: order backlog "Research framework"
+   ↓
+Promote: order promote "Research"
+   ↓
+Today: - [ ] Research framework (promoted from backlog)
+```
 
 **File Structure Created**:
 ```markdown
@@ -934,10 +947,9 @@ All 2 steps completed:
 #### Medium Priority
 4. **Add task backlog feature** - Support for non-date-specific tasks
    - ✅ **Basic backlog command**: `order backlog "task"` - COMPLETED (41/41 tests passing)
+   - ✅ **Promote to daily**: `order promote "backlog task"` - COMPLETED (42/42 tests passing)
    - 📋 **List backlog tasks**: `order backlog list` - Show all backlog items
-   - 📋 **Move to daily**: `order promote "backlog task"` - Move backlog task to today
    - 📋 **Backlog management**: `order backlog done "task"` - Mark backlog tasks complete
-   - 📋 **Backlog search**: `order backlog search "query"` - Find items in backlog
 
 **Current Structure**:
 ```markdown
@@ -956,18 +968,19 @@ All 2 steps completed:
 - **✅ Context command**: COMPLETE - Core missing functionality implemented
 - **✅ Help system improvements**: COMPLETE - Comprehensive help command implemented
 - **🚧 Smart error detection**: PENDING - Intelligent syntax correction and feedback
-- **🚧 Backlog feature**: IN PROGRESS - Basic backlog command implemented (1/4 features complete)
+- **🚧 Backlog feature**: IN PROGRESS - Basic backlog and promote commands implemented (2/4 features complete)
 
 ### Next Session Goals
-1. **Complete backlog feature** - Add list, promote, done, search commands for backlog management
+1. **Complete backlog feature** - Add list and done commands for full backlog management (2/4 complete)
 2. **Implement smart error detection** - Intelligent syntax correction and command suggestions
 3. **Consider CLI robustness improvements** - Enhanced format detection and manual edit resilience
 
 ### Technical Notes
-- All existing functionality preserved (41/41 tests passing)
-- Backlog command integrates seamlessly with existing markdown structure
+- All existing functionality preserved (42/42 tests passing)
+- Backlog and promote commands integrate seamlessly with existing markdown structure
+- Task promotion preserves history with "(promoted from backlog)" notation
 - Follows established patterns for validation, error handling, and file operations
-- Ready for additional backlog feature implementation
+- Ready for additional backlog feature implementation (list, done commands)
 
 ### Phase 3.5: Technical Debt Cleanup - COMPLETE ✅
 

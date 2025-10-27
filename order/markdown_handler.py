@@ -541,3 +541,50 @@ fi
 
                 return self._write_file_safely('\n'.join(lines))
 
+    def promote_backlog_task(self, partial_text: str) -> MarkdownResult:
+        """Move a task from backlog to today's todo section"""
+        if not partial_text.strip():
+            return MarkdownResult(success=False, error="Search text cannot be empty")
+        
+        result = self.read_file()
+        if not result.success:
+            return result
+        
+        lines = result.content.split('\n')
+        
+        task_found, task_index = self._find_backlog_task(lines, partial_text)
+        if not task_found:
+            return MarkdownResult(success=False, error=f"No backlog task found containing '{partial_text}'")
+        
+        lines.pop(task_index)
+        
+        task_text = task_found.replace("- [ ]", "").strip()
+        promoted_task = f"- [ ] {task_text} (promoted from backlog)"
+        
+        write_result = self._write_file_safely('\n'.join(lines))
+        if not write_result.success:
+            return write_result
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        add_result = self.add_content_to_daily_section(today, "Todo", promoted_task)
+        
+        if add_result.success:
+            return MarkdownResult(success=True, content=promoted_task)
+        
+        return add_result
+
+    def _find_backlog_task(self, lines: list, partial_text: str) -> tuple:
+        """Find task in backlog section. Returns (task_found, task_index)"""
+        in_backlog = False
+        
+        for i, line in enumerate(lines):
+            if line.strip() == "## Backlog":
+                in_backlog = True
+                continue
+            elif line.startswith("## ") and in_backlog:
+                break
+            elif in_backlog and "- [ ]" in line and partial_text.lower() in line.lower():
+                return line.strip(), i
+        
+        return None, -1
+
